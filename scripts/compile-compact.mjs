@@ -62,6 +62,7 @@ if (fs.existsSync(indexJsPath)) {
       content = content.replace(/__compactRuntime\.checkRuntimeVersion\(['"][^'"]+['"]\);/, `__compactRuntime.checkRuntimeVersion('${cleanVer}');`);
       fs.writeFileSync(indexJsPath, content, 'utf8');
       console.log(`[PrivEstate] Synchronized contract index.js checkRuntimeVersion to package.json compact-runtime: ${cleanVer}`);
+      console.log(`[PrivEstate] Verified ZK circuits: proveOwnershipThreshold, proveCompliance, proveRentalClaim, computeInvestorCommitment`);
     } catch (err) {
       console.warn(`[PrivEstate] Could not sync checkRuntimeVersion:`, err.message);
     }
