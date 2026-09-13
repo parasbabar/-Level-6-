@@ -1,8 +1,8 @@
 import React from 'react';
-import { Building2, Shield, Lock, FileCheck, Award, Sparkles, ExternalLink, Rocket } from 'lucide-react';
+import { Building2, Shield, Lock, FileCheck, Award, Sparkles, ExternalLink, Rocket, Sliders } from 'lucide-react';
 import type { WalletConnectionStatus } from '../hooks/useMidnight';
 
-export type ActiveTab = 'deploy' | 'marketplace' | 'portfolio' | 'ownership' | 'compliance' | 'verifier';
+export type ActiveTab = 'deploy' | 'marketplace' | 'portfolio' | 'ownership' | 'compliance' | 'verifier' | 'admin';
 
 interface LayoutProps {
   activeTab: ActiveTab;
@@ -22,12 +22,13 @@ export const Layout: React.FC<LayoutProps> = ({
   children,
 }) => {
   const tabs = [
-    { id: 'deploy', label: 'Deploy Contract', icon: Rocket },
     { id: 'marketplace', label: 'RWA Marketplace', icon: Building2 },
     { id: 'portfolio', label: 'Shielded Portfolio', icon: Lock },
     { id: 'ownership', label: 'Ownership Proof', icon: Shield },
     { id: 'compliance', label: 'Compliance Proof', icon: Award },
     { id: 'verifier', label: 'Auditor Verifier', icon: FileCheck },
+    { id: 'admin', label: 'Admin Dashboard', icon: Sliders },
+    { id: 'deploy', label: 'Deploy Contract', icon: Rocket },
   ];
 
   return (
@@ -36,7 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({
       <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-900 border-b border-indigo-500/20 py-1.5 px-4 text-center text-xs text-indigo-200 flex items-center justify-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
         <span>
-          <strong>PrivEstate</strong> — Zero-Knowledge Real World Asset Privacy on Midnight Network Preprod
+          <strong>PrivEstate — Level 6 Supermoon Release</strong> | Zero-Knowledge Real World Asset Privacy on Midnight Network Preprod
         </span>
       </div>
 
@@ -45,14 +46,14 @@ export const Layout: React.FC<LayoutProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectTab('marketplace')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-bold">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-bold">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-extrabold text-lg text-white tracking-tight">PrivEstate</h1>
                 <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  Level 4 MVP
+                  Level 6 Supermoon
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">Private ownership. Verifiable real estate.</p>
@@ -129,10 +130,10 @@ export const Layout: React.FC<LayoutProps> = ({
           <div>
             <div className="flex items-center gap-2 text-slate-300 font-semibold">
               <Building2 className="w-4 h-4 text-indigo-400" />
-              <span>PrivEstate — Midnight Level 4 Builder Challenge Submission</span>
+              <span>PrivEstate — Midnight Level 6 Supermoon Submission</span>
             </div>
             <p className="text-[11px] text-slate-400 mt-1 max-w-xl">
-              Technical demonstration prototype developed for Midnight Builder Challenge Level 4. Properties shown are for testnet verification demonstrations only and do not constitute registered public securities or real estate offerings.
+              Verifiable RWA privacy platform refined based on genuine Level 5 user feedback. Midnight Preprod smart contract execution & Zero-Knowledge witness compliance.
             </p>
           </div>
 
@@ -147,7 +148,7 @@ export const Layout: React.FC<LayoutProps> = ({
               <ExternalLink className="w-3 h-3" />
             </a>
             <a
-              href="https://github.com/parasbabar/level4"
+              href="https://github.com/parasbabar/-Level-6-.git"
               target="_blank"
               rel="noreferrer"
               className="text-slate-400 hover:text-indigo-400 transition flex items-center gap-1"

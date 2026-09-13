@@ -9,6 +9,7 @@ import { Portfolio } from './components/Portfolio';
 import { OwnershipProof } from './components/OwnershipProof';
 import { ComplianceProof } from './components/ComplianceProof';
 import { ProofVerifier } from './components/ProofVerifier';
+import { AdminDashboard } from './components/AdminDashboard';
 import type { PropertyMetadata } from './utils/contract';
 
 export function App() {
@@ -136,6 +137,14 @@ export function App() {
 
         {activeTab === 'verifier' && (
           <ProofVerifier verificationHistory={midnight.verificationHistory} />
+        )}
+
+        {activeTab === 'admin' && (
+          <AdminDashboard
+            properties={midnight.properties}
+            onAddProperty={midnight.addProperty}
+            onNavigateToMarketplace={() => setActiveTab('marketplace')}
+          />
         )}
       </div>
     </Layout>
