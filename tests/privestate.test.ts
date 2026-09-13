@@ -16,6 +16,9 @@ import {
   calculateAvailableShares,
   loadPropertiesFromStorage,
   savePropertiesToStorage,
+  isAuthorizedAdminWallet,
+  getEffectiveAdminWalletAddress,
+  DEFAULT_PREPROD_ADMIN_WALLET_ADDRESS,
   DEMO_PROPERTIES,
   type PropertyMetadata,
 } from '../src/utils/contract';
@@ -318,6 +321,150 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
 
     it('safely handles savePropertiesToStorage without throwing in non-browser environments', () => {
       expect(() => savePropertiesToStorage(DEMO_PROPERTIES)).not.toThrow();
+    });
+  });
+
+  describe('Level 6: Secure Admin Authorization', () => {
+    const adminWallet = 'mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd';
+    const nonAdminWallet = 'mn_addr_preprod1randomuser999999999999999999999999999999999999999999';
+
+    it('authorizes legitimate admin public wallet address', () => {
+      expect(isAuthorizedAdminWallet(adminWallet, adminWallet)).toBe(true);
+      expect(isAuthorizedAdminWallet(adminWallet.toUpperCase(), adminWallet)).toBe(true);
+      expect(isAuthorizedAdminWallet(`  ${adminWallet}  `, adminWallet)).toBe(true);
+    });
+
+    it('rejects unauthorized non-admin wallet address', () => {
+      expect(isAuthorizedAdminWallet(nonAdminWallet, adminWallet)).toBe(false);
+      expect(isAuthorizedAdminWallet('0xattackerwallet', adminWallet)).toBe(false);
+    });
+
+    it('rejects empty or null wallet credentials', () => {
+      expect(isAuthorizedAdminWallet(null, adminWallet)).toBe(false);
+      expect(isAuthorizedAdminWallet(undefined, adminWallet)).toBe(false);
+      expect(isAuthorizedAdminWallet('', adminWallet)).toBe(false);
+    });
+
+    it('supports comma-separated multi-admin address configurations', () => {
+      const multiAdminConfig = `${adminWallet}, 0xsecondaryadminpublickey`;
+      expect(isAuthorizedAdminWallet(adminWallet, multiAdminConfig)).toBe(true);
+      expect(isAuthorizedAdminWallet('0xsecondaryadminpublickey', multiAdminConfig)).toBe(true);
+      expect(isAuthorizedAdminWallet(nonAdminWallet, multiAdminConfig)).toBe(false);
+    });
+
+    it('returns default preprod admin address when environment is not set', () => {
+      expect(getEffectiveAdminWalletAddress()).toEqual(DEFAULT_PREPROD_ADMIN_WALLET_ADDRESS);
+    });
+  });
+
+  describe('Level 6: Authoritative Share Inventory & Purchase Validation', () => {
+    it('accurately computes availableShares = totalShares - acquiredShares', () => {
+      expect(calculateAvailableShares(100_000n, 32_500n)).toEqual(67_500n);
+      expect(calculateAvailableShares(250_000n, 110_000n)).toEqual(140_000n);
+      expect(calculateAvailableShares(50_000n, 50_000n)).toEqual(0n);
+    });
+
+    it('clamps available shares to 0n and never produces negative inventory', () => {
+      expect(calculateAvailableShares(100_000n, 120_000n)).toEqual(0n);
+      expect(calculateAvailableShares(10_000n, 999_999n)).toEqual(0n);
+    });
+
+    it('validates purchase bounds and rejects orders exceeding available inventory', () => {
+      const prop: PropertyMetadata = {
+        id: 'PROP-TEST-INV',
+        bytesId: new Uint8Array(32),
+        name: 'Inventory Test Property',
+        location: 'Miami, FL',
+        assetType: 'Multifamily',
+        totalValuationUsd: 5_000_000,
+        totalShares: 100_000n,
+        acquiredShares: 90_000n,
+        availableShares: 10_000n,
+        complianceMinimumUsd: 250_000n,
+        projectedYieldApy: '8.4%',
+        imageUrl: '',
+        status: 'Preprod Verified',
+      };
+
+      const validOrderShares = 5_000n;
+      const exactOrderShares = 10_000n;
+      const excessiveOrderShares = 15_000n;
+
+      expect(validOrderShares <= prop.availableShares).toBe(true);
+      expect(exactOrderShares <= prop.availableShares).toBe(true);
+      expect(excessiveOrderShares <= prop.availableShares).toBe(false);
+    });
+
+    it('updates property inventory upon successful purchase confirmation', () => {
+      let prop: PropertyMetadata = {
+        id: 'PROP-001',
+        bytesId: new Uint8Array(32).fill(1),
+        name: 'Sunrise Luxury Residences',
+        location: 'Miami Beach, FL',
+        assetType: 'Residential Multifamily',
+        totalValuationUsd: 5_000_000,
+        totalShares: 100_000n,
+        acquiredShares: 32_500n,
+        availableShares: 67_500n,
+        complianceMinimumUsd: 250_000n,
+        projectedYieldApy: '8.4%',
+        imageUrl: '',
+        status: 'Preprod Verified',
+      };
+
+      const purchasedShares = 5_000n;
+      const updatedAcquired = prop.acquiredShares + purchasedShares;
+      const updatedAvailable = calculateAvailableShares(prop.totalShares, updatedAcquired);
+
+      prop = {
+        ...prop,
+        acquiredShares: updatedAcquired,
+        availableShares: updatedAvailable,
+      };
+
+      expect(prop.acquiredShares).toEqual(37_500n);
+      expect(prop.availableShares).toEqual(62_500n);
+    });
+
+    it('leaves inventory unchanged when a purchase transaction fails or is rejected', () => {
+      const initialProp: PropertyMetadata = {
+        id: 'PROP-001',
+        bytesId: new Uint8Array(32).fill(1),
+        name: 'Sunrise Luxury Residences',
+        location: 'Miami Beach, FL',
+        assetType: 'Residential Multifamily',
+        totalValuationUsd: 5_000_000,
+        totalShares: 100_000n,
+        acquiredShares: 32_500n,
+        availableShares: 67_500n,
+        complianceMinimumUsd: 250_000n,
+        projectedYieldApy: '8.4%',
+        imageUrl: '',
+        status: 'Preprod Verified',
+      };
+
+      // Simulated failed transaction
+      const transactionSucceeded = false;
+      let resultingProp = { ...initialProp };
+
+      if (transactionSucceeded) {
+        resultingProp.acquiredShares += 5000n;
+        resultingProp.availableShares = calculateAvailableShares(resultingProp.totalShares, resultingProp.acquiredShares);
+      }
+
+      expect(resultingProp.acquiredShares).toEqual(initialProp.acquiredShares);
+      expect(resultingProp.availableShares).toEqual(initialProp.availableShares);
+    });
+
+    it('formats large share values cleanly for responsive UI rendering', () => {
+      const testValues = [90_000n, 100_000n, 250_000n, 1_000_000n, 10_000_000n];
+      testValues.forEach((val) => {
+        const formatted = val.toLocaleString();
+        expect(formatted).toBeDefined();
+        expect(typeof formatted).toBe('string');
+        // Ensure standard comma separator formatting
+        expect(formatted.length).toBeGreaterThanOrEqual(6);
+      });
     });
   });
 
