@@ -1,10 +1,3 @@
-/**
- * PrivEstate Smart Contract Tests
- * 
- * Tests the real Compact privacy contract execution, private witnesses,
- * Zero-Knowledge circuit constraints, and public ledger assertions.
- */
-
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   type CircuitContext,
@@ -19,6 +12,11 @@ import {
   ledger,
   pureCircuits,
 } from '../managed/contract/index.js';
+import {
+  calculateAvailableShares,
+  DEMO_PROPERTIES,
+  type PropertyMetadata,
+} from '../src/utils/contract';
 
 export interface PrivEstatePrivateState {
   investorOwnership: bigint;
@@ -260,4 +258,51 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
       expect(commitment1.length).toBe(32);
     });
   });
+
+  describe('Level 6: Property Share Transparency & Validation', () => {
+    it('correctly calculates available shares using Available = Total - Acquired', () => {
+      const total = 100_000n;
+      const acquired = 32_500n;
+      const available = calculateAvailableShares(total, acquired);
+      expect(available).toEqual(67_500n);
+      expect(total - acquired).toEqual(available);
+    });
+
+    it('clamps available shares to 0 when acquired shares equal or exceed total supply', () => {
+      expect(calculateAvailableShares(50_000n, 50_000n)).toEqual(0n);
+      expect(calculateAvailableShares(50_000n, 60_000n)).toEqual(0n);
+    });
+
+    it('verifies default demo properties have valid share transparency accounting', () => {
+      DEMO_PROPERTIES.forEach((prop) => {
+        expect(prop.totalShares).toBeGreaterThan(0n);
+        expect(prop.availableShares).toEqual(prop.totalShares - prop.acquiredShares);
+        expect(prop.availableShares).toBeGreaterThanOrEqual(0n);
+      });
+    });
+  });
+
+  describe('Level 6: Admin Property Management', () => {
+    it('creates new RWA property asset with initial 100% share availability', () => {
+      const newProperty: PropertyMetadata = {
+        id: 'PROP-TEST-001',
+        bytesId: new Uint8Array(32).fill(99),
+        name: 'Skyline Innovation Center',
+        location: 'Seattle, WA',
+        assetType: 'Commercial Grade-A Office',
+        totalValuationUsd: 8_000_000,
+        totalShares: 160_000n,
+        acquiredShares: 0n,
+        availableShares: 160_000n,
+        complianceMinimumUsd: 300_000n,
+        projectedYieldApy: '9.1%',
+        imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab',
+        status: 'Preprod Verified',
+      };
+
+      expect(newProperty.availableShares).toEqual(newProperty.totalShares);
+      expect(calculateAvailableShares(newProperty.totalShares, newProperty.acquiredShares)).toEqual(160_000n);
+    });
+  });
 });
+
