@@ -13,7 +13,7 @@ Privacy-Preserving Fractional Real Estate on Midnight
 | Resource | Link / Identifier | Notes |
 | :--- | :--- | :--- |
 | 🚀 **Live MVP** | [https://level4-nu.vercel.app](https://level4-nu.vercel.app) | Deployed on Vercel, live on Midnight Preprod |
-| 📦 **GitHub Repository** | [https://github.com/parasbabar/Level-5](https://github.com/parasbabar/Level-5) | Public repository |
+| 📦 **GitHub Repository** | [https://github.com/payalbabar/moonlight5](https://github.com/payalbabar/moonlight5) | Public Level 5 repository |
 | ⛓️ **Midnight Preprod Contract** | `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` | Deployed Compact smart contract |
 | 🌐 **Midnight Preprod Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Official Midnight Preprod Block Explorer |
 | 📊 **Level 5 Feedback Sheet** | [Google Sheets Feedback Data](https://docs.google.com/spreadsheets/d/19mfvcKg0EEET7arPpU6IrqtqxgzlKJaDUDvbL5lNM1I/edit?usp=sharing) | 55 structured Preprod tester responses |
@@ -442,18 +442,18 @@ PrivEstate updates and development milestones will be published to the official 
 
 ---
 
-## 🏆 Midnight Level 4 Submission Checklist
+## 🏆 Midnight Level 5 Submission Checklist
 
-- [x] **Working MVP live on Midnight Preprod**: Deployed at [https://level4-nu.vercel.app](https://level4-nu.vercel.app)
+- [x] **Public GitHub repository with updated documentation**: [https://github.com/payalbabar/moonlight5](https://github.com/payalbabar/moonlight5)
+- [x] **Same MVP from Level 4, extended**: Deployed on Vercel at [https://level4-nu.vercel.app](https://level4-nu.vercel.app) on Midnight Preprod
 - [x] **Verifiable contract address**: `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` on Midnight Preprod
-- [x] **Public GitHub repository**: [https://github.com/parasbabar/level4](https://github.com/parasbabar/level4)
-- [x] **Comprehensive README documentation**: Architecture, privacy model, circuits, local setup
-- [x] **Setup documentation**: Local installation and environment configuration
-- [x] **Usage documentation**: [docs/USAGE.md](docs/USAGE.md) covering investor & auditor workflows
-- [x] **CI/CD workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml) validating tests and builds
-- [x] **15+ meaningful commits**: 38+ verified commits in repository history
+- [x] **50+ Preprod users (verifiable wallet addresses)**: [users.md](users.md) with 55 structured Preprod tester validation records
+- [x] **Feedback documentation & living feedback loop**: [Google Feedback Sheet](https://docs.google.com/spreadsheets/d/19mfvcKg0EEET7arPpU6IrqtqxgzlKJaDUDvbL5lNM1I/edit?usp=sharing) & [Google Form](https://docs.google.com/forms/d/e/1FAIpQLScJ3STpCvdNjzS04VbuWQ0B2yP4JF2CVpLn5ZPoyAfEuGtWvA/viewform)
+- [x] **Comprehensive documentation**: [docs/USAGE.md](docs/USAGE.md), [PROPOSAL.md](PROPOSAL.md), and [users.md](users.md)
+- [x] **CI/CD workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml) validating tests and production builds
+- [x] **Minimum 20 meaningful commits**: 46+ verified commits in repository history
+- [x] **Demo video showing full MVP functionality**: [YouTube — PrivEstate MVP Walkthrough](https://youtu.be/FtpLSgYvZHA?si=qJiII_PFlN7c69n)
 - [x] **Product X profile**: [@PrivEstate](https://x.com/PrivEstate)
-- [x] **Demo video**: [YouTube — PrivEstate MVP Walkthrough](https://youtu.be/FtpLSgYvZHA?si=qJiII_PFlN7c69n)
 
 ---
 
