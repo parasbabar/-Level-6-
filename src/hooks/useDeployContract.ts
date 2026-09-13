@@ -358,6 +358,7 @@ export function useDeployContract(connectedApi: ConnectedAPI | null) {
       } catch { /* fallback to defaults */ }
 
       const publicDataProvider: PublicDataProvider = indexerPublicDataProvider(indexerUri, indexerWsUri);
+      console.log('[PrivEstate] Initiating Midnight Preprod contract deployment pipeline (Level 6 Supermoon)...');
 
       const addrs = await api.getShieldedAddresses();
       const coinPublicKey = addrs.shieldedCoinPublicKey;
