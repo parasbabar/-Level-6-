@@ -29,6 +29,8 @@ import { Contract } from '../managed/contract/index.js';
 // Initialize global Network ID for Midnight JS
 setNetworkId('preprod');
 
+console.log('[PrivEstate] Midnight Preprod Deployment Script — Level 6 Supermoon Edition');
+
 globalThis.WebSocket = globalThis.WebSocket || WebSocket;
 
 // Zero-dependency native environment loading
