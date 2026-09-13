@@ -30,6 +30,9 @@ export interface PropertyMetadata {
   projectedYieldApy: string;
   imageUrl: string;
   status: 'Testnet Demonstration RWA' | 'Preprod Verified';
+  acquiredShares: bigint;
+  availableShares: bigint;
+  createdAt?: string;
 }
 
 export interface InvestorPrivateHolding {
@@ -54,7 +57,7 @@ export interface VerificationResult {
   ledgerUpdated: boolean;
 }
 
-// Pre-configured Testnet Demonstration Properties
+// Pre-configured Testnet Demonstration Properties with initial share transparency accounting
 export const DEMO_PROPERTIES: PropertyMetadata[] = [
   {
     id: 'PROP-001',
@@ -64,10 +67,12 @@ export const DEMO_PROPERTIES: PropertyMetadata[] = [
     assetType: 'Residential Multifamily',
     totalValuationUsd: 5_000_000,
     totalShares: 100_000n,
+    acquiredShares: 32_500n,
+    availableShares: 67_500n,
     complianceMinimumUsd: 250_000n,
     projectedYieldApy: '8.4%',
     imageUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-    status: 'Testnet Demonstration RWA',
+    status: 'Preprod Verified',
   },
   {
     id: 'PROP-002',
@@ -77,10 +82,12 @@ export const DEMO_PROPERTIES: PropertyMetadata[] = [
     assetType: 'Commercial Grade-A Office',
     totalValuationUsd: 12_500_000,
     totalShares: 250_000n,
+    acquiredShares: 110_000n,
+    availableShares: 140_000n,
     complianceMinimumUsd: 500_000n,
     projectedYieldApy: '9.8%',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
-    status: 'Testnet Demonstration RWA',
+    status: 'Preprod Verified',
   },
   {
     id: 'PROP-003',
@@ -90,12 +97,74 @@ export const DEMO_PROPERTIES: PropertyMetadata[] = [
     assetType: 'Luxury Penthouse',
     totalValuationUsd: 3_200_000,
     totalShares: 50_000n,
+    acquiredShares: 12_000n,
+    availableShares: 38_000n,
     complianceMinimumUsd: 100_000n,
     projectedYieldApy: '7.2%',
     imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-    status: 'Testnet Demonstration RWA',
+    status: 'Preprod Verified',
   },
 ];
+
+const PROPERTIES_STORAGE_KEY = 'privestate_v1_properties';
+
+/**
+ * Calculates available shares based on total supply and acquired shares.
+ * Guarantees Available = Total - Acquired (clamped to non-negative).
+ */
+export function calculateAvailableShares(total: bigint, acquired: bigint): bigint {
+  const diff = total - acquired;
+  return diff < 0n ? 0n : diff;
+}
+
+/**
+ * Loads properties from local storage merging with initial DEMO_PROPERTIES.
+ */
+export function loadPropertiesFromStorage(): PropertyMetadata[] {
+  if (typeof localStorage === 'undefined') return DEMO_PROPERTIES;
+  try {
+    const raw = localStorage.getItem(PROPERTIES_STORAGE_KEY);
+    if (!raw) return DEMO_PROPERTIES;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return DEMO_PROPERTIES;
+
+    return parsed.map((item: any) => {
+      const totalShares = BigInt(item.totalShares || 100000);
+      const acquiredShares = BigInt(item.acquiredShares || 0);
+      const bytesId = item.bytesId ? new Uint8Array(Object.values(item.bytesId)) : new Uint8Array(32).fill(1);
+      return {
+        ...item,
+        bytesId,
+        totalShares,
+        acquiredShares,
+        availableShares: calculateAvailableShares(totalShares, acquiredShares),
+        complianceMinimumUsd: BigInt(item.complianceMinimumUsd || 100000),
+      };
+    });
+  } catch {
+    return DEMO_PROPERTIES;
+  }
+}
+
+/**
+ * Saves updated property listings to local storage.
+ */
+export function savePropertiesToStorage(props: PropertyMetadata[]): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    const serializable = props.map((p) => ({
+      ...p,
+      bytesId: Array.from(p.bytesId),
+      totalShares: p.totalShares.toString(),
+      acquiredShares: p.acquiredShares.toString(),
+      availableShares: p.availableShares.toString(),
+      complianceMinimumUsd: p.complianceMinimumUsd.toString(),
+    }));
+    localStorage.setItem(PROPERTIES_STORAGE_KEY, JSON.stringify(serializable));
+  } catch {
+    /* ignore storage errors */
+  }
+}
 
 // Default Private Investor Portfolio (Client-Side Storage / Private Witness State)
 // Starts empty - populated genuinely when user acquires fractional shares via connected wallet transaction

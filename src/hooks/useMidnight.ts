@@ -18,6 +18,9 @@ import { Contract } from '../../managed/contract/index.js';
 import {
   DEMO_PROPERTIES,
   DEFAULT_INVESTOR_PORTFOLIO,
+  loadPropertiesFromStorage,
+  savePropertiesToStorage,
+  calculateAvailableShares,
   type PropertyMetadata,
   type InvestorPrivateHolding,
   type PrivEstatePrivateState,
@@ -613,6 +616,16 @@ export function useMidnight() {
     transactionError: null,
   }));
 
+  const [properties, setProperties] = useState<PropertyMetadata[]>(() => loadPropertiesFromStorage());
+
+  const addProperty = useCallback((newProp: PropertyMetadata) => {
+    setProperties((prev) => {
+      const updated = [newProp, ...prev.filter((p) => p.id !== newProp.id)];
+      savePropertiesToStorage(updated);
+      return updated;
+    });
+  }, []);
+
   const connectedApiRef = useRef<ConnectedAPI | null>(null);
   const [connectedApi, setConnectedApi] = useState<ConnectedAPI | null>(null);
   const isConnectingRef = useRef(false);
@@ -1053,6 +1066,19 @@ export function useMidnight() {
         throw new Error('Wallet connection required.');
       }
 
+      // Share Transparency Validation: prevent purchasing more shares than available
+      const currentProp = properties.find((p) => p.id === property.id) || property;
+      if (shares > currentProp.availableShares) {
+        isPurchasingRef.current = false;
+        const errMsg = `Cannot purchase ${shares.toLocaleString()} shares. Only ${currentProp.availableShares.toLocaleString()} shares remain available for ${currentProp.name}.`;
+        setState((prev) => ({
+          ...prev,
+          transactionStatus: 'error',
+          transactionError: errMsg,
+        }));
+        throw new Error(errMsg);
+      }
+
       setState((prev) => ({
         ...prev,
         transactionStatus: 'preparing-transaction',
@@ -1280,6 +1306,24 @@ export function useMidnight() {
           status: 'confirmed',
         };
 
+        // Update property share acquisition state
+        setProperties((prevProps) => {
+          const updatedProps = prevProps.map((p) => {
+            if (p.id === property.id) {
+              const newAcquired = p.acquiredShares + shares;
+              const newAvailable = calculateAvailableShares(p.totalShares, newAcquired);
+              return {
+                ...p,
+                acquiredShares: newAcquired,
+                availableShares: newAvailable,
+              };
+            }
+            return p;
+          });
+          savePropertiesToStorage(updatedProps);
+          return updatedProps;
+        });
+
         setState((prev) => {
           const updatedPortfolio = {
             ...prev.portfolio,
@@ -1358,7 +1402,7 @@ export function useMidnight() {
         isPurchasingRef.current = false;
       }
     },
-    [state.status]
+    [state.status, properties]
   );
 
   const resetTransactionState = useCallback(() => {
@@ -1373,7 +1417,8 @@ export function useMidnight() {
 
   return {
     ...state,
-    properties: DEMO_PROPERTIES,
+    properties,
+    addProperty,
     connectedApi,
     connectWallet,
     disconnectWallet,
