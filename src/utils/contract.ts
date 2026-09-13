@@ -143,6 +143,7 @@ export function isAuthorizedAdminWallet(
 }
 
 const PROPERTIES_STORAGE_KEY = 'privestate_v1_properties';
+const REGISTRY_BROADCAST_CHANNEL = 'privestate_properties_sync_v1';
 
 /**
  * Calculates available shares based on total supply and acquired shares.
@@ -154,7 +155,43 @@ export function calculateAvailableShares(total: bigint, acquired: bigint): bigin
 }
 
 /**
- * Loads properties from local storage merging with initial DEMO_PROPERTIES.
+ * Helper to serialize PropertyMetadata into JSON-safe objects.
+ */
+export function serializeProperties(props: PropertyMetadata[]): any[] {
+  return props.map((p) => ({
+    ...p,
+    bytesId: Array.from(p.bytesId),
+    totalShares: p.totalShares.toString(),
+    acquiredShares: p.acquiredShares.toString(),
+    availableShares: p.availableShares.toString(),
+    complianceMinimumUsd: p.complianceMinimumUsd.toString(),
+  }));
+}
+
+/**
+ * Helper to deserialize JSON-safe objects back into PropertyMetadata with BigInt and Uint8Array.
+ */
+export function deserializeProperties(rawArray: any[]): PropertyMetadata[] {
+  if (!Array.isArray(rawArray) || rawArray.length === 0) return DEMO_PROPERTIES;
+  return rawArray.map((item: any) => {
+    const totalShares = BigInt(item.totalShares || 100000);
+    const acquiredShares = BigInt(item.acquiredShares || 0);
+    const bytesId = item.bytesId
+      ? new Uint8Array(Object.values(item.bytesId))
+      : new Uint8Array(32).fill(1);
+    return {
+      ...item,
+      bytesId,
+      totalShares,
+      acquiredShares,
+      availableShares: calculateAvailableShares(totalShares, acquiredShares),
+      complianceMinimumUsd: BigInt(item.complianceMinimumUsd || 100000),
+    };
+  });
+}
+
+/**
+ * Loads properties from local storage cache (synchronous fallback).
  */
 export function loadPropertiesFromStorage(): PropertyMetadata[] {
   if (typeof localStorage === 'undefined') return DEMO_PROPERTIES;
@@ -162,43 +199,111 @@ export function loadPropertiesFromStorage(): PropertyMetadata[] {
     const raw = localStorage.getItem(PROPERTIES_STORAGE_KEY);
     if (!raw) return DEMO_PROPERTIES;
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return DEMO_PROPERTIES;
-
-    return parsed.map((item: any) => {
-      const totalShares = BigInt(item.totalShares || 100000);
-      const acquiredShares = BigInt(item.acquiredShares || 0);
-      const bytesId = item.bytesId ? new Uint8Array(Object.values(item.bytesId)) : new Uint8Array(32).fill(1);
-      return {
-        ...item,
-        bytesId,
-        totalShares,
-        acquiredShares,
-        availableShares: calculateAvailableShares(totalShares, acquiredShares),
-        complianceMinimumUsd: BigInt(item.complianceMinimumUsd || 100000),
-      };
-    });
+    return deserializeProperties(parsed);
   } catch {
     return DEMO_PROPERTIES;
   }
 }
 
 /**
- * Saves updated property listings to local storage.
+ * Saves updated property listings to local storage cache.
  */
 export function savePropertiesToStorage(props: PropertyMetadata[]): void {
   if (typeof localStorage === 'undefined') return;
   try {
-    const serializable = props.map((p) => ({
-      ...p,
-      bytesId: Array.from(p.bytesId),
-      totalShares: p.totalShares.toString(),
-      acquiredShares: p.acquiredShares.toString(),
-      availableShares: p.availableShares.toString(),
-      complianceMinimumUsd: p.complianceMinimumUsd.toString(),
-    }));
+    const serializable = serializeProperties(props);
     localStorage.setItem(PROPERTIES_STORAGE_KEY, JSON.stringify(serializable));
   } catch {
     /* ignore storage errors */
+  }
+}
+
+/**
+ * Asynchronously fetches properties from the shared server/registry endpoint.
+ * Synchronizes across all connected clients and updates local cache.
+ */
+export async function fetchPropertiesFromSharedRegistry(): Promise<PropertyMetadata[]> {
+  try {
+    // 1. Try local server registry endpoint first (/api/properties)
+    const res = await fetch(`/api/properties?t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const props = deserializeProperties(data);
+        savePropertiesToStorage(props);
+        return props;
+      }
+    }
+  } catch {
+    // Try fallback static properties.json
+    try {
+      const staticRes = await fetch(`/properties.json?t=${Date.now()}`);
+      if (staticRes.ok) {
+        const data = await staticRes.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const props = deserializeProperties(data);
+          savePropertiesToStorage(props);
+          return props;
+        }
+      }
+    } catch {
+      /* fallback to local storage */
+    }
+  }
+
+  return loadPropertiesFromStorage();
+}
+
+/**
+ * Synchronizes updated properties to the shared registry and broadcasts to other clients/tabs.
+ */
+export async function syncPropertiesToSharedRegistry(props: PropertyMetadata[]): Promise<void> {
+  // 1. Save locally
+  savePropertiesToStorage(props);
+
+  // 2. Broadcast via BroadcastChannel to all active windows/tabs
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel(REGISTRY_BROADCAST_CHANNEL);
+      channel.postMessage({ type: 'PROPERTIES_UPDATED', timestamp: Date.now() });
+      channel.close();
+    }
+  } catch {
+    /* ignore broadcast errors */
+  }
+
+  // 3. Post to shared server registry endpoint
+  try {
+    const serializable = serializeProperties(props);
+    await fetch('/api/properties', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(serializable),
+    });
+  } catch (err) {
+    console.warn('[PrivEstate] Could not persist properties to server endpoint:', err);
+  }
+}
+
+/**
+ * Registers a real-time listener for property registry updates across tabs.
+ */
+export function subscribeToRegistryUpdates(onUpdate: () => void): () => void {
+  if (typeof BroadcastChannel === 'undefined') return () => {};
+  try {
+    const channel = new BroadcastChannel(REGISTRY_BROADCAST_CHANNEL);
+    channel.onmessage = (event) => {
+      if (event.data?.type === 'PROPERTIES_UPDATED') {
+        onUpdate();
+      }
+    };
+    return () => {
+      channel.close();
+    };
+  } catch {
+    return () => {};
   }
 }
 

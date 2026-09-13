@@ -19,6 +19,9 @@ import {
   DEFAULT_INVESTOR_PORTFOLIO,
   loadPropertiesFromStorage,
   savePropertiesToStorage,
+  fetchPropertiesFromSharedRegistry,
+  syncPropertiesToSharedRegistry,
+  subscribeToRegistryUpdates,
   calculateAvailableShares,
   getEffectiveAdminWalletAddress,
   isAuthorizedAdminWallet,
@@ -631,19 +634,48 @@ export function useMidnight() {
   const [properties, setProperties] = useState<PropertyMetadata[]>(() => loadPropertiesFromStorage());
   const [isRefreshingInventory, setIsRefreshingInventory] = useState<boolean>(false);
 
+  // On mount: fetch shared registry so all users see admin-added properties
+  useEffect(() => {
+    let cancelled = false;
+    fetchPropertiesFromSharedRegistry().then((latest) => {
+      if (!cancelled && latest && latest.length > 0) {
+        setProperties(latest);
+      }
+    }).catch(() => { /* fallback to localStorage already handled inside */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Subscribe to BroadcastChannel for real-time cross-tab / cross-window updates
+  useEffect(() => {
+    const unsubscribe = subscribeToRegistryUpdates(() => {
+      fetchPropertiesFromSharedRegistry().then((latest) => {
+        if (latest && latest.length > 0) {
+          setProperties(latest);
+        }
+      }).catch(() => {});
+    });
+    return unsubscribe;
+  }, []);
+
   const refreshInventory = useCallback(async () => {
     setIsRefreshingInventory(true);
     try {
+      // Fetch from shared server registry (persists across all clients)
+      const latest = await fetchPropertiesFromSharedRegistry();
+      if (latest && latest.length > 0) {
+        setProperties(latest);
+      }
+    } catch {
+      // Fallback: read from localStorage
       const latest = loadPropertiesFromStorage();
       setProperties(latest);
-      await new Promise((r) => setTimeout(r, 350));
     } finally {
       setIsRefreshingInventory(false);
     }
   }, []);
 
   const addProperty = useCallback(
-    (newProp: PropertyMetadata) => {
+    async (newProp: PropertyMetadata) => {
       const isCurrentAdmin =
         state.status === 'connected' &&
         (isAuthorizedAdminWallet(state.shieldedAddress, adminWalletAddress) ||
@@ -657,9 +689,13 @@ export function useMidnight() {
         throw new Error(err);
       }
 
+      // Build updated list and sync to shared registry (server + BroadcastChannel)
       setProperties((prev) => {
         const updated = [newProp, ...prev.filter((p) => p.id !== newProp.id)];
-        savePropertiesToStorage(updated);
+        // Fire-and-forget: sync to shared registry so all users see it
+        syncPropertiesToSharedRegistry(updated).catch((err) =>
+          console.warn('[PrivEstate] syncPropertiesToSharedRegistry failed:', err)
+        );
         return updated;
       });
     },

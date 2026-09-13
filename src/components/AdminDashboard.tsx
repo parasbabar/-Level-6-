@@ -19,7 +19,7 @@ import { getSafeWalletFingerprint, type WalletConnectionStatus } from '../hooks/
 
 interface AdminDashboardProps {
   properties: PropertyMetadata[];
-  onAddProperty: (newProp: PropertyMetadata) => void;
+  onAddProperty: (newProp: PropertyMetadata) => Promise<void>;
   onNavigateToMarketplace: () => void;
   isAdmin?: boolean;
   adminWalletAddress?: string;
@@ -41,6 +41,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onRefreshInventory,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [assetType, setAssetType] = useState('Residential Multifamily');
@@ -70,7 +71,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormError(null);
   };
 
-  const handleCreateProperty = (e: React.FormEvent) => {
+  const handleCreateProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -126,9 +127,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       createdAt: new Date().toISOString(),
     };
 
+    setIsPublishing(true);
     try {
-      onAddProperty(newProperty);
-      setSuccessMessage(`Successfully published RWA asset "${newProperty.name}" (${newProperty.id}) to Midnight Preprod Marketplace!`);
+      await onAddProperty(newProperty);
+      setSuccessMessage(`Successfully published RWA asset "${newProperty.name}" (${newProperty.id}) to Midnight Preprod Marketplace! All users will now see this property.`);
       setIsModalOpen(false);
       handleResetForm();
 
@@ -137,6 +139,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }, 6000);
     } catch (err: any) {
       setFormError(err?.message || 'Failed to add property due to authorization or validation error.');
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -552,9 +556,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-md shadow-indigo-600/30"
+                  disabled={isPublishing}
+                  className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold transition shadow-md shadow-indigo-600/30 flex items-center gap-2"
                 >
-                  Publish RWA Asset
+                  {isPublishing ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      Publishing to all users...
+                    </>
+                  ) : (
+                    'Publish RWA Asset'
+                  )}
                 </button>
               </div>
             </form>

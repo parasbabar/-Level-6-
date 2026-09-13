@@ -1,0 +1,47 @@
+[
+  {
+    "id": "PROP-001",
+    "bytesId": [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    "name": "Sunrise Luxury Residences",
+    "location": "Miami Beach, FL",
+    "assetType": "Residential Multifamily",
+    "totalValuationUsd": 5000000,
+    "totalShares": "100000",
+    "acquiredShares": "32500",
+    "availableShares": "67500",
+    "complianceMinimumUsd": "250000",
+    "projectedYieldApy": "8.4%",
+    "imageUrl": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+    "status": "Preprod Verified"
+  },
+  {
+    "id": "PROP-002",
+    "bytesId": [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    "name": "Apex Commercial Plaza",
+    "location": "Austin, TX",
+    "assetType": "Commercial Grade-A Office",
+    "totalValuationUsd": 12500000,
+    "totalShares": "250000",
+    "acquiredShares": "110000",
+    "availableShares": "140000",
+    "complianceMinimumUsd": "500000",
+    "projectedYieldApy": "9.8%",
+    "imageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+    "status": "Preprod Verified"
+  },
+  {
+    "id": "PROP-003",
+    "bytesId": [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+    "name": "Marina Heights Penthouse",
+    "location": "Marina Del Rey, CA",
+    "assetType": "Luxury Penthouse",
+    "totalValuationUsd": 3200000,
+    "totalShares": "50000",
+    "acquiredShares": "12000",
+    "availableShares": "38000",
+    "complianceMinimumUsd": "100000",
+    "projectedYieldApy": "7.2%",
+    "imageUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+    "status": "Preprod Verified"
+  }
+]
