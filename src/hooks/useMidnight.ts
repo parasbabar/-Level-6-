@@ -8,7 +8,7 @@
  * Provides deterministic, wallet-isolated state restoration across page reloads (F5).
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { InitialAPI, ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
@@ -20,6 +20,8 @@ import {
   loadPropertiesFromStorage,
   savePropertiesToStorage,
   calculateAvailableShares,
+  getEffectiveAdminWalletAddress,
+  isAuthorizedAdminWallet,
   type PropertyMetadata,
   type InvestorPrivateHolding,
   type PrivEstatePrivateState,
@@ -615,15 +617,54 @@ export function useMidnight() {
     transactionError: null,
   }));
 
-  const [properties, setProperties] = useState<PropertyMetadata[]>(() => loadPropertiesFromStorage());
+  const adminWalletAddress = useMemo(() => getEffectiveAdminWalletAddress(), []);
 
-  const addProperty = useCallback((newProp: PropertyMetadata) => {
-    setProperties((prev) => {
-      const updated = [newProp, ...prev.filter((p) => p.id !== newProp.id)];
-      savePropertiesToStorage(updated);
-      return updated;
-    });
+  const isAdmin = useMemo(() => {
+    if (state.status !== 'connected') return false;
+    return (
+      isAuthorizedAdminWallet(state.shieldedAddress, adminWalletAddress) ||
+      isAuthorizedAdminWallet(state.coinPublicKey, adminWalletAddress) ||
+      isAuthorizedAdminWallet(currentWalletIdRef.current, adminWalletAddress)
+    );
+  }, [state.status, state.shieldedAddress, state.coinPublicKey, adminWalletAddress]);
+
+  const [properties, setProperties] = useState<PropertyMetadata[]>(() => loadPropertiesFromStorage());
+  const [isRefreshingInventory, setIsRefreshingInventory] = useState<boolean>(false);
+
+  const refreshInventory = useCallback(async () => {
+    setIsRefreshingInventory(true);
+    try {
+      const latest = loadPropertiesFromStorage();
+      setProperties(latest);
+      await new Promise((r) => setTimeout(r, 350));
+    } finally {
+      setIsRefreshingInventory(false);
+    }
   }, []);
+
+  const addProperty = useCallback(
+    (newProp: PropertyMetadata) => {
+      const isCurrentAdmin =
+        state.status === 'connected' &&
+        (isAuthorizedAdminWallet(state.shieldedAddress, adminWalletAddress) ||
+          isAuthorizedAdminWallet(state.coinPublicKey, adminWalletAddress) ||
+          isAuthorizedAdminWallet(currentWalletIdRef.current, adminWalletAddress));
+
+      if (!isCurrentAdmin) {
+        const connectedFp = getSafeWalletFingerprint(state.shieldedAddress || state.coinPublicKey);
+        const err = `Admin Authorization Failed: Connected wallet (${connectedFp}) is not authorized to create properties. Required admin: ${getSafeWalletFingerprint(adminWalletAddress)}.`;
+        console.error('[PrivEstate Admin Error]', err);
+        throw new Error(err);
+      }
+
+      setProperties((prev) => {
+        const updated = [newProp, ...prev.filter((p) => p.id !== newProp.id)];
+        savePropertiesToStorage(updated);
+        return updated;
+      });
+    },
+    [state.status, state.shieldedAddress, state.coinPublicKey, adminWalletAddress]
+  );
 
   const connectedApiRef = useRef<ConnectedAPI | null>(null);
   const [connectedApi, setConnectedApi] = useState<ConnectedAPI | null>(null);
@@ -1418,6 +1459,10 @@ export function useMidnight() {
     ...state,
     properties,
     addProperty,
+    isAdmin,
+    adminWalletAddress,
+    isRefreshingInventory,
+    refreshInventory,
     connectedApi,
     connectWallet,
     disconnectWallet,

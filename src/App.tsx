@@ -84,6 +84,8 @@ export function App() {
             transactionTxId={midnight.transactionTxId}
             transactionError={midnight.transactionError}
             currentProofStatus={midnight.currentProofStatus}
+            isRefreshingInventory={midnight.isRefreshingInventory}
+            onRefreshInventory={midnight.refreshInventory}
             onSelectPropertyForProof={handleSelectPropertyForProof}
             onExecutePurchase={midnight.executeSharePurchase}
             onResetTransaction={midnight.resetTransactionState}
@@ -144,6 +146,12 @@ export function App() {
             properties={midnight.properties}
             onAddProperty={midnight.addProperty}
             onNavigateToMarketplace={() => setActiveTab('marketplace')}
+            isAdmin={midnight.isAdmin}
+            adminWalletAddress={midnight.adminWalletAddress}
+            connectedWalletAddress={midnight.shieldedAddress || midnight.coinPublicKey}
+            walletStatus={midnight.status}
+            isRefreshingInventory={midnight.isRefreshingInventory}
+            onRefreshInventory={midnight.refreshInventory}
           />
         )}
       </div>

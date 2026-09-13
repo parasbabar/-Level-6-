@@ -106,6 +106,42 @@ export const DEMO_PROPERTIES: PropertyMetadata[] = [
   },
 ];
 
+export const DEFAULT_PREPROD_ADMIN_WALLET_ADDRESS =
+  'mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd';
+
+/**
+ * Returns the configured Admin Public Wallet Address from environment configuration.
+ * Public information only - never contains private keys or secrets.
+ */
+export function getEffectiveAdminWalletAddress(): string {
+  try {
+    const envAddr = (import.meta as any)?.env?.VITE_ADMIN_WALLET_ADDRESS;
+    if (typeof envAddr === 'string' && envAddr.trim().length > 0) {
+      return envAddr.trim();
+    }
+  } catch {
+    /* fallback to default */
+  }
+  return DEFAULT_PREPROD_ADMIN_WALLET_ADDRESS;
+}
+
+/**
+ * Validates whether a candidate wallet identity (shielded address or coin public key)
+ * matches the authorized admin wallet address.
+ */
+export function isAuthorizedAdminWallet(
+  candidateAddressOrPk?: string | null,
+  configuredAdminAddress?: string | null
+): boolean {
+  if (!candidateAddressOrPk) return false;
+  const target = (configuredAdminAddress || getEffectiveAdminWalletAddress()).trim().toLowerCase();
+  if (!target) return false;
+
+  const candidate = candidateAddressOrPk.trim().toLowerCase();
+  const allowedList = target.split(',').map((a) => a.trim().toLowerCase()).filter(Boolean);
+  return allowedList.includes(candidate);
+}
+
 const PROPERTIES_STORAGE_KEY = 'privestate_v1_properties';
 
 /**
