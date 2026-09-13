@@ -325,7 +325,7 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
   });
 
   describe('Level 6: Secure Admin Authorization', () => {
-    const adminWallet = 'mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd';
+    const adminWallet = 'mn_shield-addr_preprod1j5m7aa8fx25azj598pgpqtg7gz9gr3hkfd8rr5tcw0xkqufhc74hy4psphqklgt094xsg5ajz4wu7nz6ze57amnfurd69mm2x3e8zmckry3jh';
     const nonAdminWallet = 'mn_addr_preprod1randomuser999999999999999999999999999999999999999999';
 
     it('authorizes legitimate admin public wallet address', () => {

@@ -14,7 +14,7 @@ The designated administrator is configured via the environment variable `VITE_AD
 
 ```bash
 # In .env (Public information - NEVER put private keys or mnemonics here)
-VITE_ADMIN_WALLET_ADDRESS=mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd
+VITE_ADMIN_WALLET_ADDRESS=mn_shield-addr_preprod1j5m7aa8fx25azj598pgpqtg7gz9gr3hkfd8rr5tcw0xkqufhc74hy4psphqklgt094xsg5ajz4wu7nz6ze57amnfurd69mm2x3e8zmckry3jh
 ```
 
 ### Authorization Rules & Enforcement

@@ -107,7 +107,7 @@ export const DEMO_PROPERTIES: PropertyMetadata[] = [
 ];
 
 export const DEFAULT_PREPROD_ADMIN_WALLET_ADDRESS =
-  'mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd';
+  'mn_shield-addr_preprod1j5m7aa8fx25azj598pgpqtg7gz9gr3hkfd8rr5tcw0xkqufhc74hy4psphqklgt094xsg5ajz4wu7nz6ze57amnfurd69mm2x3e8zmckry3jh';
 
 /**
  * Returns the configured Admin Public Wallet Address from environment configuration.
