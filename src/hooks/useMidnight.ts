@@ -16,7 +16,6 @@ import { submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { Contract } from '../../managed/contract/index.js';
 import {
-  DEMO_PROPERTIES,
   DEFAULT_INVESTOR_PORTFOLIO,
   loadPropertiesFromStorage,
   savePropertiesToStorage,

@@ -87,7 +87,15 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
             This information resides strictly within your client-side shielded storage. The Midnight blockchain and external observers never see these raw numbers; only your generated ZK proofs verify specific claims.
           </p>
-                  </div>
+        </div>
+        <button
+          onClick={() => setShowSensitiveData(!showSensitiveData)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition self-start sm:self-auto"
+        >
+          {showSensitiveData ? <EyeOff className="w-4 h-4 text-slate-400" /> : <Eye className="w-4 h-4 text-emerald-400" />}
+          {showSensitiveData ? 'Hide Values' : 'Show Values'}
+        </button>
+      </div>
 
                   {/* Portfolio Aggregate Summary Stats */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full bg-slate-950/60 p-4 rounded-xl border border-slate-800">
@@ -122,9 +130,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                       </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Property Identity & Holdings List */}
+                  {/* Property Identity & Holdings List */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
                   <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
@@ -280,7 +287,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             })}
           </div>
         </div>
-      )}
 
       {/* Real Transaction History Section */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">

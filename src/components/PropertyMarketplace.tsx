@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Lock,
   BadgeCheck,
+  PieChart,
 } from 'lucide-react';
 import type { PropertyMetadata, InvestorPrivateHolding } from '../utils/contract';
 import type { TransactionStatus, WalletConnectionStatus } from '../hooks/useMidnight';
@@ -567,8 +568,6 @@ export const PropertyMarketplace: React.FC<PropertyMarketplaceProps> = ({
                 </div>
               </div>
             )}
-          </div>
-        </div>
           </div>
         </div>
       )}

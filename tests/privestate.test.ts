@@ -315,6 +315,10 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
       expect(props.length).toBeGreaterThanOrEqual(3);
       expect(props[0].id).toEqual('PROP-001');
     });
+
+    it('safely handles savePropertiesToStorage without throwing in non-browser environments', () => {
+      expect(() => savePropertiesToStorage(DEMO_PROPERTIES)).not.toThrow();
+    });
   });
 
   describe('Level 6: Wallet Security & Fingerprint Helpers', () => {
