@@ -158,38 +158,77 @@ export const PropertyMarketplace: React.FC<PropertyMarketplaceProps> = ({
                 <h3 className="text-lg font-bold text-white">{prop.name}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{prop.assetType}</p>
 
-                {/* Metrics */}
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
-                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <DollarSign className="w-3 h-3 text-emerald-400" /> Total Valuation
+                {/* Share Transparency Breakdown & Visual Progress */}
+                <div className="mt-4 pt-3 border-t border-slate-800 space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-semibold flex items-center gap-1">
+                      <PieChart className="w-3.5 h-3.5 text-indigo-400" /> Share Allocation
                     </span>
-                    <span className="text-sm font-semibold text-white mt-1 block">
-                      ${prop.totalValuationUsd.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Percent className="w-3 h-3 text-indigo-400" /> Projected APY
-                    </span>
-                    <span className="text-sm font-semibold text-emerald-400 mt-1 block">
-                      {prop.projectedYieldApy}
+                    <span className="text-[11px] font-mono text-emerald-400 font-bold">
+                      {prop.availableShares.toLocaleString()} Available
                     </span>
                   </div>
 
-                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider">Total Shares</span>
-                    <span className="text-xs font-mono font-semibold text-slate-200 mt-1 block">
-                      {prop.totalShares.toLocaleString()}
-                    </span>
+                  {/* Share Availability Bar */}
+                  <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden flex border border-slate-800">
+                    <div
+                      style={{
+                        width: `${
+                          prop.totalShares > 0n
+                            ? Math.min(100, Number((prop.acquiredShares * 10000n) / prop.totalShares) / 100)
+                            : 0
+                        }%`,
+                      }}
+                      className="bg-gradient-to-r from-amber-500 to-indigo-500 h-full transition-all duration-300"
+                      title="Acquired Shares"
+                    />
+                    <div
+                      style={{
+                        width: `${
+                          prop.totalShares > 0n
+                            ? Math.max(0, 100 - Number((prop.acquiredShares * 10000n) / prop.totalShares) / 100)
+                            : 100
+                        }%`,
+                      }}
+                      className="bg-emerald-500/80 h-full transition-all duration-300"
+                      title="Available Shares"
+                    />
                   </div>
 
-                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider">Accred. Min</span>
-                    <span className="text-xs font-mono font-semibold text-slate-200 mt-1 block">
-                      ${prop.complianceMinimumUsd.toLocaleString()}
-                    </span>
+                  <div className="grid grid-cols-3 gap-1.5 pt-1 text-center font-mono">
+                    <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                      <span className="text-[9px] text-slate-500 uppercase block">Total</span>
+                      <span className="text-xs font-bold text-slate-200">{prop.totalShares.toLocaleString()}</span>
+                    </div>
+                    <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                      <span className="text-[9px] text-slate-500 uppercase block">Acquired</span>
+                      <span className="text-xs font-bold text-amber-400">{prop.acquiredShares.toLocaleString()}</span>
+                    </div>
+                    <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                      <span className="text-[9px] text-slate-500 uppercase block">Available</span>
+                      <span className="text-xs font-bold text-emerald-400">{prop.availableShares.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Financial Metrics */}
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="bg-slate-950/40 p-2 rounded border border-slate-800/60">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <DollarSign className="w-3 h-3 text-emerald-400" /> Valuation
+                      </span>
+                      <span className="text-xs font-semibold text-white mt-0.5 block">
+                        ${(prop.totalValuationUsd / 1_000_000).toFixed(2)}M
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/40 p-2 rounded border border-slate-800/60">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <Percent className="w-3 h-3 text-indigo-400" /> Yield APY
+                      </span>
+                      <span className="text-xs font-semibold text-emerald-400 mt-0.5 block">
+                        {prop.projectedYieldApy}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -334,16 +373,29 @@ export const PropertyMarketplace: React.FC<PropertyMarketplaceProps> = ({
                     </span>
                   </div>
 
+                  {/* Share Availability Info Banner */}
+                  <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 flex items-center justify-between text-xs mb-3 font-mono">
+                    <span className="text-slate-400">Available Inventory:</span>
+                    <span className="text-emerald-400 font-bold">
+                      {purchasingProperty.availableShares.toLocaleString()} / {purchasingProperty.totalShares.toLocaleString()} shares
+                    </span>
+                  </div>
+
                   <div className="flex items-center gap-2 mb-3">
                     {[2_500, 5_000, 10_000, 20_000].map((val) => (
                       <button
                         key={val}
                         type="button"
-                        onClick={() => setSelectedSharesCount(val)}
-                        disabled={transactionStatus !== 'idle' && transactionStatus !== 'error'}
+                        onClick={() => setSelectedSharesCount(Math.min(val, Number(purchasingProperty.availableShares)))}
+                        disabled={
+                          (transactionStatus !== 'idle' && transactionStatus !== 'error') ||
+                          val > Number(purchasingProperty.availableShares)
+                        }
                         className={`flex-1 py-1.5 rounded-lg text-xs font-mono transition border ${
                           selectedSharesCount === val
                             ? 'bg-emerald-600 border-emerald-500 text-white font-bold'
+                            : val > Number(purchasingProperty.availableShares)
+                            ? 'bg-slate-900/40 border-slate-800/40 text-slate-600 cursor-not-allowed'
                             : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
                         }`}
                       >
@@ -355,13 +407,22 @@ export const PropertyMarketplace: React.FC<PropertyMarketplaceProps> = ({
                   <input
                     type="range"
                     min="1000"
-                    max={Number(purchasingProperty.totalShares) / 2}
+                    max={Math.max(1000, Number(purchasingProperty.availableShares))}
                     step="500"
-                    value={selectedSharesCount}
+                    value={Math.min(selectedSharesCount, Math.max(1000, Number(purchasingProperty.availableShares)))}
                     onChange={(e) => setSelectedSharesCount(Number(e.target.value))}
                     disabled={transactionStatus !== 'idle' && transactionStatus !== 'error'}
                     className="w-full accent-emerald-500 cursor-pointer"
                   />
+
+                  {selectedSharesCount > Number(purchasingProperty.availableShares) && (
+                    <div className="mt-2.5 p-2.5 bg-rose-950/80 border border-rose-500/40 rounded-lg text-xs text-rose-200 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>
+                        Exceeds available inventory ({purchasingProperty.availableShares.toLocaleString()} shares remaining).
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Investment Calculation Card */}
@@ -467,44 +528,47 @@ export const PropertyMarketplace: React.FC<PropertyMarketplaceProps> = ({
                     onClick={handleConfirmPurchase}
                     disabled={
                       isSubmitting ||
+                      purchasingProperty.availableShares === 0n ||
+                      BigInt(selectedSharesCount) > purchasingProperty.availableShares ||
                       (walletStatus !== 'connected' && walletStatus !== 'syncing') ||
                       (effectiveTransactionStatus !== 'idle' && effectiveTransactionStatus !== 'error')
                     }
                     className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition ${
                       walletStatus !== 'connected' && walletStatus !== 'syncing'
                         ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                        : BigInt(selectedSharesCount) > purchasingProperty.availableShares || purchasingProperty.availableShares === 0n
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                         : isSubmitting || (effectiveTransactionStatus !== 'idle' && effectiveTransactionStatus !== 'error')
                         ? 'bg-emerald-600/50 text-white cursor-wait'
                         : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40'
                     }`}
                   >
-                    {isSubmitting || effectiveTransactionStatus === 'preparing-transaction' ? (
+                    {isSubmitting || effectiveTransactionStatus === 'preparing-transaction' || effectiveTransactionStatus === 'awaiting-wallet-signature' ? (
                       <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Initiating Request...</span>
-                      </>
-                    ) : effectiveTransactionStatus === 'awaiting-wallet-signature' ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Check Wallet Popup...</span>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Generating Proof & Submitting...</span>
                       </>
                     ) : effectiveTransactionStatus === 'transaction-submitted' || effectiveTransactionStatus === 'waiting-for-confirmation' ? (
                       <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Confirming on Preprod...</span>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Confirming on Midnight...</span>
                       </>
-                    ) : walletStatus !== 'connected' && walletStatus !== 'syncing' ? (
-                      <span>Wallet Connection Required</span>
+                    ) : purchasingProperty.availableShares === 0n ? (
+                      <span>Sold Out (0 Available)</span>
+                    ) : BigInt(selectedSharesCount) > purchasingProperty.availableShares ? (
+                      <span>Exceeds Available Shares</span>
                     ) : (
                       <>
                         <Lock className="w-3.5 h-3.5" />
-                        <span>Confirm & Sign via Lace Wallet</span>
+                        <span>Confirm Share Purchase</span>
                       </>
                     )}
                   </button>
                 </div>
               </div>
             )}
+          </div>
+        </div>
           </div>
         </div>
       )}
