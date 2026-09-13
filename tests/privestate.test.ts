@@ -17,6 +17,10 @@ import {
   DEMO_PROPERTIES,
   type PropertyMetadata,
 } from '../src/utils/contract';
+import {
+  getSafeWalletFingerprint,
+  getDeterministicWalletId,
+} from '../src/hooks/useMidnight';
 
 export interface PrivEstatePrivateState {
   investorOwnership: bigint;
@@ -302,6 +306,30 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
 
       expect(newProperty.availableShares).toEqual(newProperty.totalShares);
       expect(calculateAvailableShares(newProperty.totalShares, newProperty.acquiredShares)).toEqual(160_000n);
+    });
+  });
+
+  describe('Level 6: Wallet Security & Fingerprint Helpers', () => {
+    it('masks long wallet addresses cleanly for safe logging', () => {
+      const fullAddr = 'mn_addr_preprod1cwtsm6mjm0ygeu4a8lankwhurgenflvsrhwkhyl9p4r8u9a9dxus95c8qd';
+      const safe = getSafeWalletFingerprint(fullAddr);
+      expect(safe).not.toEqual(fullAddr);
+      expect(safe).toContain('...');
+      expect(safe.startsWith('mn_addr_pr')).toBe(true);
+    });
+
+    it('returns "none" when wallet identity is empty or undefined', () => {
+      expect(getSafeWalletFingerprint(null)).toEqual('none');
+      expect(getSafeWalletFingerprint(undefined)).toEqual('none');
+      expect(getSafeWalletFingerprint('')).toEqual('none');
+    });
+
+    it('derives deterministic wallet ID preferring coin public key over address', () => {
+      const pk = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const addr = 'mn_addr_preprod12345';
+      expect(getDeterministicWalletId(addr, pk)).toEqual(pk);
+      expect(getDeterministicWalletId(addr, null)).toEqual(addr);
+      expect(getDeterministicWalletId(null, null)).toBeNull();
     });
   });
 });
