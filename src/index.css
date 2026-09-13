@@ -484,3 +484,16 @@ button:hover:not(:disabled) {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* Level 6 Supermoon Visual Utilities */
+.supermoon-glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.25), 0 0 40px rgba(16, 185, 129, 0.15);
+}
+
+.share-progress-acquired {
+  background: linear-gradient(90deg, #f59e0b 0%, #6366f1 100%);
+}
+
+.share-progress-available {
+  background: rgba(16, 185, 129, 0.85);
+}
