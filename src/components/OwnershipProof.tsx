@@ -91,7 +91,10 @@ export const OwnershipProof: React.FC<OwnershipProofProps> = ({
                     }`}
                   >
                     <span className="font-bold text-xs truncate text-white">{prop.name}</span>
-                    <span className="text-[10px] font-mono text-indigo-400 mt-1">{prop.id}</span>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-indigo-400 mt-1">
+                      <span>{prop.id}</span>
+                      <span className="text-slate-400">{prop.availableShares.toLocaleString()} avail.</span>
+                    </div>
                   </button>
                 );
               })}
