@@ -35,7 +35,9 @@ export function resolveCircuitName(input: string): string {
   let name = input.includes('#') ? (input.split('#').pop() || input) : input;
   name = name.replace(/^.*[\\/]/, '');
   name = name.replace(/\.(prover|verifier|bzkir|zkir)$/, '');
-  return name.trim();
+  const cleanName = name.trim();
+  console.debug(`[PrivEstate ZKConfig] Resolved circuit "${input}" -> "${cleanName}"`);
+  return cleanName;
 }
 
 /**
