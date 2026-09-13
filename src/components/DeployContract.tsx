@@ -109,13 +109,13 @@ export const DeployContract: React.FC<DeployContractProps> = ({
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-semibold">
               <Rocket className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Real Midnight Preprod Deployment</span>
+              <span>Midnight Preprod Contract Infrastructure — Level 6</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               PrivEstate Smart Contract
             </h1>
             <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
-              Deploy the compiled ZK Compact smart contract directly to the Midnight Preprod testnet using your connected 1AM (Midnight Lace) DApp connector wallet.
+              Deploy the compiled ZK Compact smart contract directly to Midnight Preprod testnet. Supports property parameterization (<code className="font-mono text-indigo-300">propertyId</code>, <code className="font-mono text-indigo-300">totalShares</code>, <code className="font-mono text-indigo-300">complianceMinimum</code>) matching Admin Console listings.
             </p>
           </div>
 
