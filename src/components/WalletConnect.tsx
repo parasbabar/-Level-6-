@@ -55,9 +55,14 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
                 Network: {networkId}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-              <Lock className="w-3 h-3 text-emerald-400" />
-              <span>DApp Connector Standard (window.midnight)</span>
+            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3 text-emerald-400" />
+                <span>DApp Connector Standard (window.midnight)</span>
+              </span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                v0.2.0 Supermoon
+              </span>
             </p>
           </div>
         </div>
