@@ -87,69 +87,85 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
             This information resides strictly within your client-side shielded storage. The Midnight blockchain and external observers never see these raw numbers; only your generated ZK proofs verify specific claims.
           </p>
-        </div>
+                  </div>
 
-        {propertiesWithHoldings.length > 0 && (
-          <button
-            onClick={() => setShowSensitiveData(!showSensitiveData)}
-            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-2 transition"
-          >
-            {showSensitiveData ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span>{showSensitiveData ? 'Mask Private Values' : 'Reveal Shielded Values'}</span>
-          </button>
-        )}
-      </div>
-
-      {propertiesWithHoldings.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-400 space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-500">
-            <Lock className="w-7 h-7" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-200">No private holdings yet.</h3>
-            <p className="text-xs max-w-md mx-auto text-slate-400 mt-1">
-              You have not acquired fractional shares in any tokenized property yet. Visit the RWA Marketplace to acquire shares through your connected Midnight Lace Wallet.
-            </p>
-          </div>
-        </div>
-      ) : (
-        /* Holdings Table */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Investor Holdings by Property ({propertiesWithHoldings.length})
-            </span>
-            <span className="text-[11px] font-mono text-indigo-400">
-              Client-side Witness State
-            </span>
-          </div>
-
-          <div className="divide-y divide-slate-800">
-            {propertiesWithHoldings.map((prop) => {
-              const holding = portfolio[prop.id];
-              const isEditing = editingPropId === prop.id;
-              const ownershipPercentage =
-                prop.totalShares > 0n
-                  ? (Number(holding.ownershipShares * 10000n / prop.totalShares) / 100).toFixed(2)
-                  : '0.00';
-
-              return (
-                <div key={prop.id} className="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:bg-slate-800/30 transition">
-                  {/* Property Identity */}
-                  <div className="flex items-center gap-4 min-w-[240px]">
-                    <img
-                      src={prop.imageUrl}
-                      alt={prop.name}
-                      className="w-14 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
-                    />
-                    <div>
-                      <h4 className="font-bold text-sm text-white">{prop.name}</h4>
-                      <span className="text-xs font-mono text-indigo-400">{prop.id}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">
-                        Total pool: {prop.totalShares.toLocaleString()} shares
+                  {/* Portfolio Aggregate Summary Stats */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Total Capital Deployed</span>
+                      <span className="text-lg font-bold font-mono text-emerald-400">
+                        {showSensitiveData
+                          ? `$${propertiesWithHoldings
+                              .reduce((acc, p) => acc + (portfolio[p.id]?.investmentAmountUsd || 0n), 0n)
+                              .toLocaleString()}`
+                          : '••••••••••••'}
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Total Shares Held</span>
+                      <span className="text-lg font-bold font-mono text-indigo-300">
+                        {showSensitiveData
+                          ? propertiesWithHoldings
+                              .reduce((acc, p) => acc + (portfolio[p.id]?.ownershipShares || 0n), 0n)
+                              .toLocaleString()
+                          : '••••••••••••'}
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] text-slate-400 uppercase tracking-wider block">Est. Annual Rental Yield</span>
+                      <span className="text-lg font-bold font-mono text-purple-300">
+                        {showSensitiveData
+                          ? `$${propertiesWithHoldings
+                              .reduce((acc, p) => acc + (portfolio[p.id]?.annualRentalIncomeUsd || 0n), 0n)
+                              .toLocaleString()} / yr`
+                          : '••••••••••••'}
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Property Identity & Holdings List */}
+                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                  <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Investor Holdings by Property ({propertiesWithHoldings.length})
+                    </span>
+                    <span className="text-[11px] font-mono text-indigo-400">
+                      Client-side Witness State
+                    </span>
+                  </div>
+
+                  <div className="divide-y divide-slate-800">
+                    {propertiesWithHoldings.map((prop) => {
+                      const holding = portfolio[prop.id];
+                      const isEditing = editingPropId === prop.id;
+                      const ownershipPercentage =
+                        prop.totalShares > 0n
+                          ? (Number(holding.ownershipShares * 10000n / prop.totalShares) / 100).toFixed(2)
+                          : '0.00';
+
+                      return (
+                        <div key={prop.id} className="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:bg-slate-800/30 transition">
+                          {/* Property Identity */}
+                          <div className="flex items-center gap-4 min-w-[260px]">
+                            <img
+                              src={prop.imageUrl}
+                              alt={prop.name}
+                              className="w-14 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
+                            />
+                            <div>
+                              <h4 className="font-bold text-sm text-white">{prop.name}</h4>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs font-mono text-indigo-400 font-bold">{prop.id}</span>
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                                  {prop.availableShares.toLocaleString()} avail.
+                                </span>
+                              </div>
+                              <span className="block text-[11px] text-slate-400 mt-1">
+                                Pool: {prop.totalShares.toLocaleString()} shares | Acquired: {prop.acquiredShares.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
 
                   {/* Private Metrics or Edit Mode */}
                   {isEditing ? (
