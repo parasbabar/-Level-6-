@@ -1,6 +1,6 @@
-# 🏠 PrivEstate
+# 🏠 PrivEstate — Level 6 Supermoon
 
-Privacy-Preserving Fractional Real Estate on Midnight
+Privacy-Preserving Fractional Real Estate on Midnight Network Preprod
 
 *"This project is built on the Midnight Network."*
 
@@ -8,21 +8,76 @@ Privacy-Preserving Fractional Real Estate on Midnight
 
 ---
 
-## 🔗 Level 4 & Level 5 Submission Links
+## 🌝 Level 6 — Supermoon Overview
+
+**PrivEstate Level 6** is the Supermoon refinement of the existing MVP built during Level 4 and validated in Level 5 of the Midnight Builder Challenge.
+
+Rather than building an unrelated project or making unnecessary architectural resets, Level 6 refines the same MVP product based on **genuine Level 5 user feedback**.
+
+### 🔁 Feedback Loop Workflow
+
+```
+User Feedback
+    │
+    ▼
+Identify Recurring Requests (UI/UX Polish, Share Transparency, Admin Dashboard)
+    │
+    ▼
+Prioritize Technical Improvements & Safety
+    │
+    ▼
+Implement Improvements (AdminDashboard, Share Bar, Validation, Vitest Tests)
+    │
+    ▼
+Test Refined MVP (Vitest unit tests + TypeScript checks + Production build)
+    │
+    ▼
+Validate with Preprod Users (Midnight Preprod Network)
+    │
+    ▼
+Collect New Feedback & Extend Evidence (users.md & feedback.md)
+```
+
+---
+
+## 🌟 Level 6 Implemented Refinements
+
+### 1. 🎨 Systemic UI / UX Refinement
+- **Visual Polish**: Upgraded dark-mode design system with curated HSL color accents, modern typography, card hover dynamics, and Level 6 Supermoon navigation indicators.
+- **Responsive Layout**: Dedicated mobile navigation bar and responsive grid layouts ensuring an optimal experience across mobile, tablet, and desktop viewports.
+- **Transaction Feedback**: Clear state machine visual cues for every step: `Idle` $\rightarrow$ `Preparing` $\rightarrow$ `Wallet Signature` $\rightarrow$ `Broadcasting` $\rightarrow$ `Confirmation`.
+
+### 2. 📊 Property Share Transparency Accounting
+- **Explicit Share Metrics**: For every property listing, PrivEstate clearly displays:
+  - **Total Shares**: Authorized fractional share supply (e.g. 100,000 shares).
+  - **Acquired Shares**: Shares already acquired by investors.
+  - **Available Shares**: Remaining fractional inventory available for purchase.
+- **Mathematical Formula**:
+  $$\text{Available Shares} = \text{Total Shares} - \text{Acquired Shares}$$
+- **Visual Progress Allocation**: Dynamic color-coded share availability bar (Amber/Indigo acquired, Emerald available).
+- **Over-Subscription Protection**: Real-time frontend validation and hook-level execution checks prevent users from requesting more shares than currently available.
+
+### 3. 🛡️ Admin Property Management
+- **Admin Console**: Dedicated **Admin Dashboard** allowing authorized property issuance and tokenization parameter setup.
+- **Property Listing Form**: Add new RWA properties with title, location, category, valuation ($), share supply, APY %, compliance minimums ($), and custom image URLs.
+- **Security & Authorization Model**:
+  - Exposes no private keys, seed phrases, or administrative secrets in client bundles or source code.
+  - Clearly separates client marketplace administration from smart contract deployment, matching Midnight Compact contract architecture principles.
+
+---
+
+## 🔗 Submission Links & Resources
 
 | Resource | Link / Identifier | Notes |
 | :--- | :--- | :--- |
-| 🚀 **Live MVP** | [https://level4-nu.vercel.app](https://level4-nu.vercel.app) | Deployed on Vercel, live on Midnight Preprod |
-| 📦 **GitHub Repository** | [https://github.com/payalbabar/moonlight5](https://github.com/payalbabar/moonlight5) | Public Level 5 repository |
-| ⛓️ **Midnight Preprod Contract** | `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` | Deployed Compact smart contract |
-| 🌐 **Midnight Preprod Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Official Midnight Preprod Block Explorer |
-| 📊 **Level 5 Feedback Sheet** | [Google Sheets Feedback Data](https://docs.google.com/spreadsheets/d/10SIy8qraGBTP5IZZtQ1TTgLDLfcxyMqsNFrFeTqRTzk/edit?usp=sharing) | 50 structured Preprod tester responses |
-| 👥 **Level 5 User Proof** | [users.md](users.md) | Structured Preprod user validation records |
-| 🐦 **PrivEstate X Profile** | [@PrivEstate](https://x.com/PrivEstate) | Product building in public profile |
-| 🎥 **MVP Demo Video** | [YouTube — PrivEstate MVP Walkthrough](https://youtu.be/FtpLSgYvZHA?si=qJiII_PFlN7c69n) | Walkthrough recording of live MVP flow |
-| ⚙️ **CI/CD Pipeline** | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Automated test, Compact compile, and build |
-| 📖 **Usage Guide** | [docs/USAGE.md](docs/USAGE.md) | Step-by-step investor & auditor walkthrough |
-| 📋 **Project Proposal** | [PROPOSAL.md](PROPOSAL.md) | Product specification and architecture |
+| 📦 **Level 6 GitHub Repo** | [https://github.com/parasbabar/-Level-6-.git](https://github.com/parasbabar/-Level-6-.git) | Main Level 6 Supermoon repository |
+| 🚀 **Live MVP** | [https://level4-nu.vercel.app](https://level4-nu.vercel.app) | Live on Midnight Preprod |
+| ⛓️ **Preprod Contract Address** | `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` | Deployed Compact smart contract |
+| 🌐 **Midnight Block Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Midnight Preprod Explorer |
+| 📋 **Feedback Analysis Report** | [feedback.md](feedback.md) | Level 5 feedback themes & Level 6 improvements |
+| 👥 **Preprod User Evidence** | [users.md](users.md) | Genuine Preprod user records (50 Level 5 + 70 Level 6 registry) |
+| 🎥 **MVP Demo Video** | [YouTube — PrivEstate Walkthrough](https://youtu.be/FtpLSgYvZHA?si=qJiII_PFlN7c69n) | Walkthrough of MVP functionality |
+| ⚙️ **CI/CD Pipeline** | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Automated Vitest test suite and Vite build |
 
 ---
 
