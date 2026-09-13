@@ -25,19 +25,32 @@ PrivEstate makes tokenized real-world real estate ownership private and cryptogr
 
 ---
 
-### 2. Exploring Tokenized Real-World Properties
+### 2. Exploring RWA Marketplace & Share Transparency
 1. Navigate to the **RWA Marketplace** tab.
 2. Review the tokenized real-estate offerings (e.g., *Sunrise Luxury Residences*, *Apex Commercial Plaza*).
-3. Each property card displays:
-   - **Property ID**: The unique on-chain identifier.
-   - **Valuation & Shares**: Total property valuation and fractional shares issued.
-   - **Projected Yield (APY)**: Expected annual rental yields.
-   - **Accreditation Minimum**: The regulatory minimum investment required.
-   - **Status**: Clearly demarcated as *Testnet Demonstration RWA*.
+3. Each property card features **Share Transparency Metrics**:
+   - **Total Shares**: Authorized fractional token supply (e.g., 100,000 shares).
+   - **Acquired Shares**: Shares already acquired by investors.
+   - **Available Shares**: Remaining fractional shares available for purchase.
+   - **Visual Share Allocation Bar**: Color-coded progress indicator showing acquired vs available ratio.
+4. When acquiring shares:
+   - Input share counts are dynamically validated against **Available Shares**.
+   - Attempting to acquire more shares than available triggers over-subscription validation and disables purchase confirmation.
 
 ---
 
-### 3. Viewing Your Shielded Portfolio
+### 3. Admin Property Management (Admin Dashboard)
+1. Navigate to the **Admin Dashboard** tab.
+2. View platform-wide metrics: Total RWA Assets, Total Listed Valuation, Total Share Supply, and Available Allocations.
+3. Click **Add New RWA Property** to tokenization a new asset:
+   - Provide Property Name, Location, Asset Category.
+   - Set Total Valuation ($ USD), Total Share Supply, Compliance Minimum ($ USD), APY %, and Image URL.
+4. Click **Publish RWA Asset**. The new property is registered into marketplace state with initial 100% share availability and is immediately ready for investor share acquisition and ZK proofs.
+5. **Architecture Note**: Properties created via Admin Console map deterministically to Midnight Compact contract parameters (`propertyId`, `totalShares`, `complianceMinimum`), ensuring zero private key exposure in frontend bundles.
+
+---
+
+### 4. Viewing Your Shielded Portfolio
 1. Click the **Shielded Portfolio** tab.
 2. This screen shows your private ownership holdings:
    - Your private shares and ownership percentage (e.g., 17,430 shares = 17.43%).
