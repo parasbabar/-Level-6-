@@ -71,11 +71,30 @@ A total of 50 Preprod users (students, developers, Web3 users, and others) teste
 
 ---
 
-## Level 6 Preprod User Validation Registry (70 User Extension)
+## Level 6 Preprod User Validation Registry (20 New Participants)
 
-The table below is formatted to capture the 70 genuine Level 6 Preprod user validation records collected during live Preprod network verification:
+The table below records the 20 genuine Level 6 Preprod user validation entries collected during live Preprod network verification on 13 Sep 2026:
 
 | # | Name | User Type | Preprod Wallet Address | MVP Feature Tested | Overall Rating | Feedback & Comments |
 |---|---|---|---|---|---:|---|
-| *1-70* | *Pending live Preprod user testing collection* | *Preprod Tester* | `mn_addr_preprod1...` | *Marketplace, Share Transparency, ZK Proofs, Admin Console* | *5/5* | *Real Preprod user feedback to be appended during live deployment validation* |
+| 51 | Tejaswini | Student | `mn_addr_preprod1aapvl4246nuc62836tzsdmwypdl5ay34tp38xq2llq7kal9gslxqgvyq6v` | 🔄 Test the complete MVP flow | 5/5 | no |
+| 52 | isha yadav | Developer | `mn_addr_preprod1jzskcpw32vjj6xy3vvxcehgfrx40u52vnvwejezxrq9f0qjsg6vq0afh8a` | 📊 View Ownership/Portfolio | 5/5 | - |
+| 53 | Dhruv | Student | `mn_addr_preprod18v3zvexalghl6qpaprhlxj9779cdts0zhs8r5e0azngfkewmx5msx2gs43` | 🔄 Test the complete MVP flow | 5/5 | nothing |
+| 54 | ayaan chavan | Web3 User | `mn_addr_preprod1gvs823ll87yhqjurngymn6rjfp66stf6hmjfs9u0dsz369my7ensretdy8` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 55 | manas | Student | `mn_addr_preprod1t6rk84m9ql2sx87am84nw3l4zm3pjxzsfdpfjp7cxrpmvtgyf3hq3tetgf` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 56 | yash patil | Student | `mn_addr_preprod1sgk6xqye4r2rkmdydlqpaa3a7dz3ajulmyufvxp2wmnc7crfc5rsualwh4` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 57 | Aditya | Web3 User | `mn_addr_preprod1hyq4exfpdywq6kvrttz7x2fvztusww9gqmrz6dmasftfzns5xrasku6nde` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 58 | sonal | Web3 User | `mn_addr_preprod1065gvdr8uy6g6vhztcnrue6th962u4lnfvr93cp077692xsrkhyqqsp9qk` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 59 | saksham | Web3 User | `mn_addr_preprod1ngarzevft77pxr7cws2pty6d60k3kgaelwzuxvj8shswpskyu4gsj7nane` | 📊 View Ownership/Portfolio | 5/5 | all good |
+| 60 | ishan chavan | Student | `mn_addr_preprod1yxc8s8gt6duyhz97glk456qj6e5ta99m6ukntv4emn8x70xc4d7qdhc87e` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 61 | meera yadav | Student | `mn_addr_preprod1yr728zu7npp3x7dfuk3vlqn6wt05zjgf096erhlu4grzj89z48nqxq3yxr` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 62 | isha patil | Student | `mn_addr_preprod1mwtmx2yxqzc558ecam6ffq882hsn0ummtc0z7kpzkv7rl88h27zsceyg2x` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 63 | tanvi | Student | `mn_addr_preprod1vj8w2z4vtcl0lzq6erp0kwu4q9xqaq22c9mccwzqcn77qrmvqtyscqjdm0` | 🔄 Test the complete MVP flow | 5/5 | good no need |
+| 64 | Roshan | Student | `mn_addr_preprod1ka69h3cx0q6n9zz2cjyma549ramwymulewujl6rz3aqpey7xg68sr5ym0e` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 65 | Arnav | Student | `mn_addr_preprod18trn0vjwqhn7dkjrvm9vek6u0eh68uatjlfq2p0e5al4cpe97jgscy3uyx` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 66 | viki | Student | `mn_addr_preprod1lp2ffnfqwnnsk78zyjzvae9284nllvtngnqffy0y347yu7xkltwsmtztfe` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 67 | Nisha | Student | `mn_addr_preprod19g62vv6l0km27um76zd60zt8dzkucprtn0hylslenk0h8tcuhj2ssu2sfy` | 🔄 Test the complete MVP flow | 5/5 | nope |
+| 68 | samir | Student | `mn_addr_preprod1k70yeuczzun8dn3g4z000hpp0mqz0u2yjl6jhawppg8lxuff8a5qhk03mr` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 69 | shreya | Student | `mn_addr_preprod1xnzlhfa9w8hhtudsqyyy5r7le5yjmgmnzr7ur90llne5yf3n540sqx0g6f` | 🔄 Test the complete MVP flow | 5/5 | - |
+| 70 | Aditi | Student | `mn_addr_preprod1g0ny0rr06eguma4wu2hc8apy672ajpzpxgevkv0h935ptu8j5ceqttsl4y` | 🔄 Test the complete MVP flow | 5/5 | - |
 
