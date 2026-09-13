@@ -14,6 +14,8 @@ import {
 } from '../managed/contract/index.js';
 import {
   calculateAvailableShares,
+  loadPropertiesFromStorage,
+  savePropertiesToStorage,
   DEMO_PROPERTIES,
   type PropertyMetadata,
 } from '../src/utils/contract';
@@ -306,6 +308,12 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
 
       expect(newProperty.availableShares).toEqual(newProperty.totalShares);
       expect(calculateAvailableShares(newProperty.totalShares, newProperty.acquiredShares)).toEqual(160_000n);
+    });
+
+    it('returns default DEMO_PROPERTIES when local storage is empty', () => {
+      const props = loadPropertiesFromStorage();
+      expect(props.length).toBeGreaterThanOrEqual(3);
+      expect(props[0].id).toEqual('PROP-001');
     });
   });
 
