@@ -47,22 +47,24 @@ Collect New Feedback & Extend Evidence (users.md & feedback.md)
 - **Responsive Layout**: Dedicated mobile navigation bar and responsive grid layouts ensuring an optimal experience across mobile, tablet, and desktop viewports.
 - **Transaction Feedback**: Clear state machine visual cues for every step: `Idle` $\rightarrow$ `Preparing` $\rightarrow$ `Wallet Signature` $\rightarrow$ `Broadcasting` $\rightarrow$ `Confirmation`.
 
-### 2. 📊 Property Share Transparency Accounting
+### 2. 📊 Property Share Transparency & Live Inventory
 - **Explicit Share Metrics**: For every property listing, PrivEstate clearly displays:
   - **Total Shares**: Authorized fractional share supply (e.g. 100,000 shares).
   - **Acquired Shares**: Shares already acquired by investors.
   - **Available Shares**: Remaining fractional inventory available for purchase.
 - **Mathematical Formula**:
   $$\text{Available Shares} = \text{Total Shares} - \text{Acquired Shares}$$
-- **Visual Progress Allocation**: Dynamic color-coded share availability bar (Amber/Indigo acquired, Emerald available).
-- **Over-Subscription Protection**: Real-time frontend validation and hook-level execution checks prevent users from requesting more shares than currently available.
+- **Responsive Sizing**: Overflow-proof numeric stat boxes (`min-w-0`, `tabular-nums`) ensuring readability for large numbers ($90\text{k}, 100\text{k}, 250\text{k}, 1\text{M}, 10\text{M}$) across mobile and desktop.
+- **Live Inventory Synchronization**: Synchronizes confirmed Midnight Preprod transactions with the shared asset registry. Includes a **Sync Inventory** control to re-fetch state without stale mock overwrites.
+- **Purchase Validation**: Strict pre-transaction bounds checks prevent over-subscription. If a transaction fails, inventory remains untouched (no false deductions).
 
-### 3. 🛡️ Admin Property Management
-- **Admin Console**: Dedicated **Admin Dashboard** allowing authorized property issuance and tokenization parameter setup.
-- **Property Listing Form**: Add new RWA properties with title, location, category, valuation ($), share supply, APY %, compliance minimums ($), and custom image URLs.
-- **Security & Authorization Model**:
-  - Exposes no private keys, seed phrases, or administrative secrets in client bundles or source code.
-  - Clearly separates client marketplace administration from smart contract deployment, matching Midnight Compact contract architecture principles.
+### 3. 🛡️ Secure Admin Property Authorization
+- **Designated Public Admin Wallet**: Configured via `VITE_ADMIN_WALLET_ADDRESS=<admin-public-wallet-address>`.
+- **Public Security**: Admin wallet address is public information. Private keys, seeds, or mnemonics are **NEVER** placed in frontend bundles, configuration files, or source code.
+- **Dual-Layer Enforcement**:
+  - **UI State**: Non-admin users see a clear "Admin Authorization Required / Restricted" warning banner with locked controls.
+  - **Action Handler**: The `addProperty` callback rejects unauthorized wallets at execution time.
+- **Property Listing Form**: Authorized admins can tokenize new RWA properties with title, location, category, valuation ($), share supply, APY %, compliance minimums ($), and custom image URLs.
 
 ---
 

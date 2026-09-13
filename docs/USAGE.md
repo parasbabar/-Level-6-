@@ -40,12 +40,16 @@ PrivEstate makes tokenized real-world real estate ownership private and cryptogr
 ---
 
 ### 3. Admin Property Management (Admin Dashboard)
-1. Navigate to the **Admin Dashboard** tab.
-2. View platform-wide metrics: Total RWA Assets, Total Listed Valuation, Total Share Supply, and Available Allocations.
-3. Click **Add New RWA Property** to tokenization a new asset:
-   - Provide Property Name, Location, Asset Category.
-   - Set Total Valuation ($ USD), Total Share Supply, Compliance Minimum ($ USD), APY %, and Image URL.
-4. Click **Publish RWA Asset**. The new property is registered into marketplace state with initial 100% share availability and is immediately ready for investor share acquisition and ZK proofs.
+1. Ensure your Midnight Lace / 1AM Wallet is connected with the authorized public admin wallet (`VITE_ADMIN_WALLET_ADDRESS`).
+2. Navigate to the **Admin Dashboard** tab.
+3. If connected as admin:
+   - View platform-wide metrics: Total RWA Assets, Total Listed Valuation, Total Share Supply, and Available Allocations.
+   - Click **Add New RWA Property** to tokenize a new asset: Provide Property Name, Location, Asset Category, Valuation ($ USD), Total Shares, Compliance Minimum ($ USD), APY %, and Image URL.
+   - Click **Publish RWA Asset**. The property is registered into marketplace state with initial 100% share availability and is immediately ready for investor share acquisition and ZK proofs.
+4. If connected with a non-admin wallet:
+   - The dashboard displays a clear **Admin Authorization Required / Restricted** banner.
+   - Displays your connected wallet address alongside the configured admin public address.
+   - Property creation controls are locked to prevent unauthorized modifications.
 5. **Architecture Note**: Properties created via Admin Console map deterministically to Midnight Compact contract parameters (`propertyId`, `totalShares`, `complianceMinimum`), ensuring zero private key exposure in frontend bundles.
 
 ---
