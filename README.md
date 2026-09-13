@@ -77,21 +77,21 @@ Collect New Feedback & Extend Evidence (users.md & feedback.md)
 | ⛓️ **Preprod Contract Address** | `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` | Deployed Compact smart contract |
 | 🌐 **Midnight Block Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Midnight Preprod Explorer |
 | 📋 **Feedback Analysis Report** | [feedback.md](feedback.md) | Level 5 feedback themes & Level 6 improvements |
-| 👥 **Preprod User Evidence** | [users.md](users.md) | Genuine Preprod user records (50 Level 5 + 70 Level 6 registry) |
+| 👥 **Preprod User Evidence** | [users.md](users.md) | 70 genuine Midnight Preprod user validation records |
 | 🎥 **MVP Demo Video** | [YouTube — PrivEstate Walkthrough](https://www.youtube.com/watch?v=FTd3XnOjuc4) | Walkthrough of MVP functionality |
 | ⚙️ **CI/CD Pipeline** | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Automated Vitest test suite and Vite build |
 
 ---
 
-## 🌕 Level 5 — User Validation & Feedback
+## 👥 Preprod User Validation & Feedback
 
-We collected structured feedback from 50 Preprod users who tested the MVP.
+We collected structured feedback from **70 genuine Preprod users** (students, developers, and Web3 users) who tested the live PrivEstate application on Midnight Preprod.
 
-### User Feedback Sheet
-[View User Feedback & Validation Sheet](https://docs.google.com/spreadsheets/d/10SIy8qraGBTP5IZZtQ1TTgLDLfcxyMqsNFrFeTqRTzk/edit?usp=sharing)
+### User Feedback Sheet (Source of Truth)
+[View Feedback & Validation Google Sheet](https://docs.google.com/spreadsheets/d/10SIy8qraGBTP5IZZtQ1TTgLDLfcxyMqsNFrFeTqRTzk/edit?usp=sharing)
 
-### User Validation Proof
-[View Preprod User Validation Records](./users.md)
+### User Validation Records (All 70 wallets)
+[View Preprod User Validation Records → users.md](./users.md)
 
 
 ---
@@ -359,8 +359,8 @@ On every push and pull request to `main`, the pipeline validates:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/parasbabar/level4.git
-   cd level4
+   git clone https://github.com/parasbabar/-Level-6-.git
+   cd Level-6-
    ```
 
 2. **Install dependencies**:
@@ -410,7 +410,7 @@ These commands correspond directly to the scripts defined in `package.json`:
 ## 📁 Project Structure
 
 ```text
-level4/
+Level-6-/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                # CI/CD pipeline definition
@@ -493,20 +493,20 @@ level4/
 * **Product X Profile**: [@PrivEstate on X](https://x.com/PrivEstate)
 * **Launch Post**: [PrivEstate announcement on X](https://x.com/PrivEstate/status/2098676086213329125)
 
-PrivEstate updates and development milestones will be published to the official product X account as part of the Midnight Level 4 challenge.
+PrivEstate updates and development milestones will be published to the official product X account as part of the Midnight Level 6 Supermoon challenge.
 
 ---
 
-## 🏆 Midnight Level 5 Submission Checklist
+## 🏆 Midnight Level 6 Supermoon Submission Checklist
 
-- [x] **Public GitHub repository with updated documentation**: [https://github.com/payalbabar/moonlight5](https://github.com/payalbabar/moonlight5)
-- [x] **Same MVP from Level 4, extended**: Deployed on Vercel at [https://level-6.vercel.app](https://level-6.vercel.app) on Midnight Preprod
+- [x] **Public GitHub repository**: [https://github.com/parasbabar/-Level-6-](https://github.com/parasbabar/-Level-6-)
+- [x] **Live MVP deployed on Midnight Preprod**: [https://level-6.vercel.app](https://level-6.vercel.app)
 - [x] **Verifiable contract address**: `2e5e3eea72733c09f794677002d0a0840163b3b3da1d6e661bc4dd1b421eaab9` on Midnight Preprod
-- [x] **50+ Preprod users (verifiable wallet addresses)**: [users.md](users.md) with 50 structured Preprod tester validation records
+- [x] **70 Preprod users with verifiable wallet addresses**: [users.md](users.md) — one combined table, all wallets from Google Sheet
 - [x] **Feedback documentation & living feedback loop**: [Google Feedback Sheet](https://docs.google.com/spreadsheets/d/10SIy8qraGBTP5IZZtQ1TTgLDLfcxyMqsNFrFeTqRTzk/edit?usp=sharing)
-- [x] **Comprehensive documentation**: [docs/USAGE.md](docs/USAGE.md), [PROPOSAL.md](PROPOSAL.md), and [users.md](users.md)
+- [x] **Comprehensive documentation**: [docs/USAGE.md](docs/USAGE.md), [PROPOSAL.md](PROPOSAL.md), [feedback.md](feedback.md), and [users.md](users.md)
 - [x] **CI/CD workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml) validating tests and production builds
-- [x] **Minimum 20 meaningful commits**: 46+ verified commits in repository history
+- [x] **Meaningful commits in repository history**: 46+ verified commits
 - [x] **Demo video showing full MVP functionality**: [YouTube — PrivEstate MVP Walkthrough](https://www.youtube.com/watch?v=FTd3XnOjuc4)
 - [x] **Product X profile**: [@PrivEstate](https://x.com/PrivEstate)
 
@@ -523,7 +523,7 @@ PrivEstate updates and development milestones will be published to the official 
 
 ## 📚 Documentation
 
-* 👥 [users.md](users.md) — Level 5 Preprod user validation records and structured feedback
+* 👥 [users.md](users.md) — 70 genuine Midnight Preprod user validation records and structured feedback
 * 📖 [docs/USAGE.md](docs/USAGE.md) — Comprehensive investor and auditor guide
 * 📋 [PROPOSAL.md](PROPOSAL.md) — Project proposal, problem statement, and architecture specification
 * 🧠 [contracts/privestate.compact](contracts/privestate.compact) — Midnight Compact smart contract and circuit definitions
