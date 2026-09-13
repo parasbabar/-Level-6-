@@ -7,6 +7,12 @@ interface ProofVerifierProps {
 }
 
 export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistory }) => {
+  const [filterType, setFilterType] = React.useState<'ALL' | 'OWNERSHIP_THRESHOLD' | 'COMPLIANCE_MINIMUM' | 'RENTAL_YIELD'>('ALL');
+
+  const filteredHistory = verificationHistory.filter(
+    (item) => filterType === 'ALL' || item.claimType === filterType
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -33,22 +39,49 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      {verificationHistory.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-medium">
+          <span className="text-slate-400 font-semibold mr-1">Filter Claims:</span>
+          {[
+            { id: 'ALL', label: `All Proofs (${verificationHistory.length})` },
+            { id: 'OWNERSHIP_THRESHOLD', label: 'Ownership Claims' },
+            { id: 'COMPLIANCE_MINIMUM', label: 'Compliance Claims' },
+            { id: 'RENTAL_YIELD', label: 'Rental Yield Claims' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterType(tab.id as any)}
+              className={`px-3 py-1.5 rounded-lg border transition whitespace-nowrap ${
+                filterType === tab.id
+                  ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* History / Audit Log */}
-      {verificationHistory.length === 0 ? (
+      {filteredHistory.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-400 space-y-3">
           <Shield className="w-12 h-12 mx-auto text-slate-600 stroke-[1.5]" />
-          <h3 className="text-base font-semibold text-slate-200">No Verifications Executed Yet</h3>
+          <h3 className="text-base font-semibold text-slate-200">No Verifications Found</h3>
           <p className="text-xs max-w-md mx-auto text-slate-400">
-            Generate an ownership proof or compliance proof from the marketplace or portfolio tab to see the live auditor verification output here.
+            {verificationHistory.length === 0
+              ? 'Generate an ownership proof or compliance proof from the marketplace or portfolio tab to see live auditor verification logs here.'
+              : 'No verified proof records match the selected claim filter.'}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
-            Verified Audit Logs ({verificationHistory.length})
+            Verified Audit Logs ({filteredHistory.length})
           </h3>
 
-          {verificationHistory.map((item, idx) => (
+          {filteredHistory.map((item, idx) => (
             <div
               key={idx}
               className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg space-y-5 hover:border-slate-700 transition"
