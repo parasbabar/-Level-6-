@@ -1,7 +1,16 @@
 # PrivEstate — Project Proposal & Product Specification
 
 **Private ownership. Verifiable real estate.**  
-*Midnight Builder Challenge — Level 4 Submission (Track: Finance)*
+*Midnight Builder Challenge — Level 6 Supermoon Submission (Track: Finance)*
+
+---
+
+## Level 6 Supermoon Evolution & Feedback Integration
+
+Based on 50 genuine Preprod user responses collected during Level 5, Level 6 delivers three core architectural refinements:
+1. **Systemic UI / UX Polish**: Modernized dark mode design, HSL color tokens, responsive mobile drawer, and clear transaction state machine indicators.
+2. **Property Share Transparency Accounting**: Explicit display of **Total Shares**, **Acquired Shares**, and **Available Shares** (`Available = Total - Acquired`), visual allocation bars, and over-subscription validation.
+3. **Admin Property Management**: Dedicated Admin Dashboard allowing property tokenization, listing management, and Compact parameter setup matching Midnight smart contract architecture.
 
 ---
 
