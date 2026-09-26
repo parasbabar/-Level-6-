@@ -81,7 +81,7 @@ Collect New Feedback & Extend Evidence (users.md & feedback.md)
 | 🌐 **Midnight Block Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Midnight Preprod Explorer |
 | 📋 **Feedback Analysis Report** | [feedback.md](feedback.md) | Level 5 feedback themes & Level 6 improvements |
 | 👥 **Preprod User Evidence** | [users.md](users.md) | 70 genuine Midnight Preprod user validation records |
-| 🎥 **MVP Demo Video** | [YouTube — PrivEstate Walkthrough](https://www.youtube.com/watch?v=FTd3XnOjuc4) | Walkthrough of MVP functionality |
+| 🎥 **MVP Demo Video** | [PrivEstate Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing) | Walkthrough of MVP functionality |
 | ⚙️ **CI/CD Pipeline** | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Automated Vitest test suite and Vite build |
 
 ---
@@ -474,7 +474,7 @@ Level-6-/
 
 ## 🎥 Demo
 
-* **Demo Video**: [▶️ Watch on YouTube — PrivEstate MVP Walkthrough](https://www.youtube.com/watch?v=FTd3XnOjuc4)
+* **Demo Video**: [▶️ Watch  PrivEstate MVP Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing)
 * **X Demo Post**: [View on X (@PrivEstate)](https://x.com/PrivEstate/status/2098676086213329125)
 
 ### Recommended Demo Flow
