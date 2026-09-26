@@ -510,7 +510,7 @@ PrivEstate updates and development milestones will be published to the official 
 - [x] **Comprehensive documentation**: [docs/USAGE.md](docs/USAGE.md), [PROPOSAL.md](PROPOSAL.md), [feedback.md](feedback.md), and [users.md](users.md)
 - [x] **CI/CD workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml) validating tests and production builds
 - [x] **Meaningful commits in repository history**: 46+ verified commits
-- [x] **Demo video showing full MVP functionality**: [YouTube — PrivEstate MVP Walkthrough](https://www.youtube.com/watch?v=FTd3XnOjuc4)
+- [x] **Demo video showing full MVP functionality**: [PrivEstate MVP Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing)
 - [x] **Product X profile**: [@PrivEstate](https://x.com/PrivEstate)
 
 ---
