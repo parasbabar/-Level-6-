@@ -40,12 +40,15 @@ Collect New Feedback & Extend Evidence (users.md & feedback.md)
 
 ---
 
-## 🌟 Level 6 Implemented Refinements
+## 🌟 Level 6 Implemented Refinements & Brand Revision
 
-### 1. 🎨 Systemic UI / UX Refinement
-- **Visual Polish**: Upgraded dark-mode design system with curated HSL color accents, modern typography, card hover dynamics, and Level 6 Supermoon navigation indicators.
-- **Responsive Layout**: Dedicated mobile navigation bar and responsive grid layouts ensuring an optimal experience across mobile, tablet, and desktop viewports.
-- **Transaction Feedback**: Clear state machine visual cues for every step: `Idle` $\rightarrow$ `Preparing` $\rightarrow$ `Wallet Signature` $\rightarrow$ `Broadcasting` $\rightarrow$ `Confirmation`.
+### 1. 🎨 Custom Branding & Premium UI/UX Revision
+- **Original Vector Brand Mark**: Designed custom vector/SVG brand identity (`PrivEstateLogo.tsx`, `public/logo.svg`, `public/favicon.svg`) fusing architectural geometric facades, privacy shield contours, and stylized P/E monograms.
+- **Premium Design System**: Complete typography, surface tokens, glassmorphism, glowing accents, and responsive layout utilities across desktop, tablet, and mobile.
+- **Interactive Discovery Experience**: Added hero introduction, real-time search, category filtering, and visual share allocation metrics (`Total`, `Acquired`, `Available`).
+- **Shielded Portfolio Dashboard**: Private witness wealth management overview with sensitive data masking, aggregate stats, and on-chain Midnight Preprod ledger explorer links.
+- **Auditor & Regulator ZK Verification**: Transparent dual-view proof audit log displaying disclosed public claims vs. shielded private fields with cryptographic commitment hashes.
+- **State Machine Transaction Experience**: Clear feedback across all stages: `Idle` $\rightarrow$ `Preparing` $\rightarrow$ `Wallet Signature` $\rightarrow$ `Broadcasting` $\rightarrow$ `Confirmation` with preprod explorer links.
 
 ### 2. 📊 Property Share Transparency & Live Inventory
 - **Explicit Share Metrics**: For every property listing, PrivEstate clearly displays:

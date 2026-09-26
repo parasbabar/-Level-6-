@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Shield, Lock, FileCheck, Hash, Clock } from 'lucide-react';
+import { CheckCircle2, Shield, Lock, FileCheck, Hash, Clock, Copy, Check } from 'lucide-react';
 import type { VerificationResult } from '../utils/contract';
 
 interface ProofVerifierProps {
@@ -8,41 +8,46 @@ interface ProofVerifierProps {
 
 export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistory }) => {
   const [filterType, setFilterType] = React.useState<'ALL' | 'OWNERSHIP_THRESHOLD' | 'COMPLIANCE_MINIMUM' | 'RENTAL_YIELD'>('ALL');
+  const [copiedHash, setCopiedHash] = React.useState<string | null>(null);
 
   const filteredHistory = verificationHistory.filter(
     (item) => filterType === 'ALL' || item.claimType === filterType
   );
 
+  const handleCopyHash = (hash: string) => {
+    navigator.clipboard.writeText(hash);
+    setCopiedHash(hash);
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <FileCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Auditor & Regulator Proof Verifier</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Verify cryptographic claims without accessing sensitive investor records.
-              </p>
-            </div>
+      <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+            <FileCheck className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">Auditor & Regulator Proof Verifier</h2>
+            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
+              Verify cryptographic claims directly against Midnight Compact circuits without gaining access to sensitive investor identities or raw balances.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Zero-Knowledge Verification Active</span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="px-3 py-1.5 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>ZK Verification Active</span>
           </span>
         </div>
       </div>
 
       {/* Filter Tabs */}
       {verificationHistory.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-medium">
-          <span className="text-slate-400 font-semibold mr-1">Filter Claims:</span>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold no-scrollbar">
+          <span className="text-slate-400 mr-1">Filter Claims:</span>
           {[
             { id: 'ALL', label: `All Proofs (${verificationHistory.length})` },
             { id: 'OWNERSHIP_THRESHOLD', label: 'Ownership Claims' },
@@ -52,9 +57,9 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
             <button
               key={tab.id}
               onClick={() => setFilterType(tab.id as any)}
-              className={`px-3 py-1.5 rounded-lg border transition whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl border transition whitespace-nowrap ${
                 filterType === tab.id
-                  ? 'bg-indigo-600 border-indigo-500 text-white font-bold'
+                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
                   : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -66,7 +71,7 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
 
       {/* History / Audit Log */}
       {filteredHistory.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-400 space-y-3">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400 space-y-3 shadow-lg">
           <Shield className="w-12 h-12 mx-auto text-slate-600 stroke-[1.5]" />
           <h3 className="text-base font-semibold text-slate-200">No Verifications Found</h3>
           <p className="text-xs max-w-md mx-auto text-slate-400">
@@ -84,29 +89,29 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
           {filteredHistory.map((item, idx) => (
             <div
               key={idx}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg space-y-5 hover:border-slate-700 transition"
+              className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5 hover:border-slate-700 transition"
             >
               {/* Status Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <div className="space-y-1">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono uppercase bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
                     {item.claimType}
                   </span>
                   <h4 className="text-base font-bold text-white mt-1">{item.publicClaim}</h4>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <span>STATUS: VALID</span>
                   </span>
                 </div>
               </div>
 
-              {/* Auditor Grid: Public vs Private Comparison */}
+              {/* Comparison Grid: Public vs Private Data */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Left: What the Auditor Learns (PUBLIC CLAIMS) */}
-                <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2.5">
+                {/* Left: Public Claims */}
+                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2.5">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                     <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
                       Publicly Disclosed Audit Data
@@ -130,12 +135,12 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
                   </div>
                 </div>
 
-                {/* Right: What Remains Strictly Hidden (PRIVATE DATA) */}
-                <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2.5">
+                {/* Right: Protected Fields */}
+                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2.5">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                     <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                       <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                      Protected Private Fields
+                      <span>Protected Private Fields</span>
                     </span>
                     <span className="text-[10px] text-indigo-300 font-mono">SHIELDED</span>
                   </div>
@@ -144,14 +149,14 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
                     {item.undisclosedPrivateFields.map((field, fIdx) => (
                       <li key={fIdx} className="flex items-center justify-between text-slate-300">
                         <span className="text-slate-400">{field.split('(')[0].trim()}:</span>
-                        <span className="font-bold font-mono text-[11px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                        <span className="font-bold font-mono text-[10px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
                           🔒 PRIVATE
                         </span>
                       </li>
                     ))}
                     <li className="flex items-center justify-between text-slate-300">
                       <span className="text-slate-400">Rental Income Details:</span>
-                      <span className="font-bold font-mono text-[11px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                      <span className="font-bold font-mono text-[10px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
                         🔒 NOT DISCLOSED
                       </span>
                     </li>
@@ -160,14 +165,26 @@ export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistor
               </div>
 
               {/* Cryptographic Proof Verification Footer */}
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-                <div className="flex items-center gap-2 text-slate-400 truncate">
+              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-slate-400 truncate flex-1 min-w-0">
                   <Hash className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                  <span>ZK Commitment:</span>
-                  <span className="text-slate-200 truncate">{item.proofHash}</span>
+                  <span className="shrink-0">ZK Commitment:</span>
+                  <span className="text-slate-200 truncate select-all">{item.proofHash}</span>
+                  <button
+                    onClick={() => handleCopyHash(item.proofHash)}
+                    className="p-1 text-slate-400 hover:text-white shrink-0"
+                    title="Copy hash"
+                  >
+                    {copiedHash === item.proofHash ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
                 </div>
-                <div className="text-emerald-400 text-[11px] shrink-0 font-semibold">
-                  ✓ Cryptographically Verified on Midnight
+                <div className="text-emerald-400 text-[11px] shrink-0 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Cryptographically Verified on Midnight</span>
                 </div>
               </div>
             </div>

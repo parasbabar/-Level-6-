@@ -26,6 +26,7 @@ import {
   getSafeWalletFingerprint,
   getDeterministicWalletId,
 } from '../src/hooks/useMidnight';
+import { extractTxMetadata } from '../src/utils/txMetadata';
 
 export interface PrivEstatePrivateState {
   investorOwnership: bigint;
@@ -489,6 +490,44 @@ describe('PrivEstate Privacy Contract Test Suite', () => {
       expect(getDeterministicWalletId(addr, pk)).toEqual(pk);
       expect(getDeterministicWalletId(addr, null)).toEqual(addr);
       expect(getDeterministicWalletId(null, null)).toBeNull();
+    });
+  });
+
+  describe('Midnight Real Transaction Metadata Extraction', () => {
+    it('returns empty string identifiers for null, undefined, or empty inputs without errors', () => {
+      expect(extractTxMetadata(null)).toEqual({ txId: '', txHash: '', identifiers: [] });
+      expect(extractTxMetadata(undefined)).toEqual({ txId: '', txHash: '', identifiers: [] });
+      expect(extractTxMetadata('')).toEqual({ txId: '', txHash: '', identifiers: [] });
+      expect(extractTxMetadata('invalid-non-hex')).toEqual({ txId: '', txHash: '', identifiers: [] });
+    });
+
+    it('extracts transaction hash and identifiers from a Transaction runtime object', () => {
+      const mockTx = {
+        transactionHash: () => '3a5b7c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
+        identifiers: () => ['ident1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab'],
+      };
+
+      const result = extractTxMetadata(mockTx);
+      expect(result.txId).toEqual('ident1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab');
+      expect(result.txHash).toEqual('3a5b7c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b');
+      expect(result.identifiers).toHaveLength(1);
+    });
+
+    it('falls back to transactionHash if identifiers array is empty', () => {
+      const mockTx = {
+        transactionHash: () => 'beef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+        identifiers: () => [],
+      };
+
+      const result = extractTxMetadata(mockTx);
+      expect(result.txId).toEqual('beef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab');
+      expect(result.txHash).toEqual('beef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab');
+    });
+
+    it('gracefully handles binary data without crashing', () => {
+      const randomBytes = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
+      const result = extractTxMetadata(randomBytes);
+      expect(result).toEqual({ txId: '', txHash: '', identifiers: [] });
     });
   });
 });

@@ -12,6 +12,7 @@ import {
   Info,
   Lock,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import type { PropertyMetadata } from '../utils/contract';
 import { calculateAvailableShares } from '../utils/contract';
@@ -75,7 +76,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     e.preventDefault();
     setFormError(null);
 
-    // CRITICAL: Reject unauthorized wallets at action handler level
+    // Reject unauthorized wallets at action handler level
     if (!isAdmin) {
       setFormError(
         `Action rejected: Connected wallet (${getSafeWalletFingerprint(connectedWalletAddress)}) is not authorized as the platform admin. Admin wallet: ${getSafeWalletFingerprint(adminWalletAddress)}.`
@@ -145,18 +146,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-6xl mx-auto">
       {/* Admin Authorization Status Banner */}
       {!isAdmin && (
-        <div className="bg-rose-950/40 border border-rose-500/40 rounded-xl p-5 text-xs text-rose-200 shadow-xl space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/30">
+        <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-6 text-xs text-rose-200 shadow-xl space-y-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/30">
               <Lock className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-rose-100 flex items-center gap-2">
                 <span>Admin Authorization Required</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/30">
                   RESTRICTED
                 </span>
               </h3>
@@ -166,15 +167,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11px] font-mono">
-            <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800 space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1 text-[11px] font-mono">
+            <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
               <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Connected Wallet:</span>
               <span className={connectedWalletAddress ? 'text-amber-300 select-all break-all' : 'text-slate-500 italic'}>
                 {connectedWalletAddress ? `${connectedWalletAddress} (${walletStatus})` : `No wallet connected (status: ${walletStatus})`}
               </span>
             </div>
 
-            <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
               <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Configured Admin Public Address:</span>
               <span className="text-emerald-400 select-all break-all">
                 {adminWalletAddress || 'VITE_ADMIN_WALLET_ADDRESS not configured in environment'}
@@ -182,43 +183,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
 
-          <div className="text-[11px] text-rose-300/80 flex items-start gap-2 bg-slate-950/40 p-2.5 rounded border border-rose-900/40">
+          <div className="text-[11px] text-rose-300/80 flex items-start gap-2 bg-slate-950/40 p-3 rounded-xl border border-rose-900/40">
             <Info className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <span>
-              To manage assets, connect with the configured admin wallet above or set <code className="bg-slate-900 text-rose-200 px-1 py-0.5 rounded font-mono">VITE_ADMIN_WALLET_ADDRESS</code> in your <code className="bg-slate-900 text-rose-200 px-1 py-0.5 rounded font-mono">.env</code> file.
+              To manage assets, connect with the configured admin wallet above or set <code className="bg-slate-900 text-rose-200 px-1 py-0.5 rounded font-mono">VITE_ADMIN_WALLET_ADDRESS</code> in your environment.
             </span>
           </div>
         </div>
       )}
 
-      {/* Admin Title & Architecture Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      {/* Admin Title & Controls */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${isAdmin ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${isAdmin ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
                 {isAdmin ? 'Admin Authorized' : 'Read-Only Mode'}
               </span>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Shield className="w-5 h-5 text-indigo-400" />
-                <span>RWA Property Management & Asset Tokenization</span>
+                <span>RWA Property Management Console</span>
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
               Issue, configure, and publish fractional real estate assets to the Midnight Preprod RWA Marketplace.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {onRefreshInventory && (
               <button
                 onClick={onRefreshInventory}
                 disabled={isRefreshingInventory}
-                className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition disabled:opacity-60"
+                className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition disabled:opacity-60"
                 title="Synchronize asset state with Midnight Preprod registry"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isRefreshingInventory ? 'animate-spin' : ''}`} />
-                <span>{isRefreshingInventory ? 'Syncing...' : 'Sync Inventory'}</span>
+                <span>{isRefreshingInventory ? 'Syncing...' : 'Sync Registry'}</span>
               </button>
             )}
 
@@ -231,7 +232,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 setIsModalOpen(true);
               }}
               disabled={!isAdmin}
-              className={`px-4 py-2 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg ${
+              className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg ${
                 isAdmin
                   ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30 cursor-pointer'
                   : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
@@ -244,8 +245,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        {/* Security & Authorization Architecture Notice */}
-        <div className="bg-amber-950/30 border border-amber-500/30 rounded-lg p-3.5 text-xs text-amber-200/90 flex items-start gap-3">
+        {/* Security Notice */}
+        <div className="bg-amber-950/30 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-200/90 flex items-start gap-3">
           <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-semibold text-amber-300">
@@ -253,7 +254,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </p>
             <p className="text-[11px] text-amber-200/80 leading-relaxed">
               Properties created via this Admin Console are structured with deterministic Compact parameters (<code className="font-mono bg-slate-950 px-1 py-0.5 rounded text-amber-300">propertyId</code>, <code className="font-mono bg-slate-950 px-1 py-0.5 rounded text-amber-300">totalShares</code>, <code className="font-mono bg-slate-950 px-1 py-0.5 rounded text-amber-300">complianceMinimum</code>).
-              To preserve Midnight privacy guarantees, private keys and administrative secrets are never hardcoded in source code or client bundles.
+              Private keys and administrative secrets are never placed in frontend source code.
             </p>
           </div>
         </div>
@@ -261,24 +262,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Success Notification */}
       {successMessage && (
-        <div className="bg-emerald-950/60 border border-emerald-500/50 rounded-xl p-4 text-emerald-200 text-xs flex items-center justify-between shadow-lg">
+        <div className="bg-emerald-950/60 border border-emerald-500/50 rounded-2xl p-4 sm:p-5 text-emerald-200 text-xs flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <span>{successMessage}</span>
           </div>
           <button
             onClick={onNavigateToMarketplace}
-            className="px-3 py-1.5 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-500 transition text-[11px] flex items-center gap-1 shrink-0"
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition text-xs flex items-center gap-1 shrink-0 shadow-sm"
           >
             <span>View Marketplace</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {/* High-Level Overview Metrics */}
+      {/* Overview Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
             <span>Total RWA Assets</span>
             <Building2 className="w-4 h-4 text-indigo-400" />
@@ -287,7 +288,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="text-[11px] text-slate-500 mt-1">Listed properties</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
             <span>Total Listed Valuation</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -298,7 +299,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="text-[11px] text-slate-500 mt-1">Combined valuation</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
             <span>Total Share Supply</span>
             <PieChart className="w-4 h-4 text-blue-400" />
@@ -309,7 +310,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="text-[11px] text-slate-500 mt-1">Authorized shares</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
             <span>Marketplace Allocation</span>
             <Layers className="w-4 h-4 text-purple-400" />
@@ -317,15 +318,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="text-2xl font-bold text-purple-300 font-mono">
             {totalAvailableAll.toLocaleString()}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-[11px] text-slate-500 mt-1">
             Available ({totalAcquiredAll.toLocaleString()} acquired)
           </div>
         </div>
       </div>
 
       {/* Property Inventory Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Building2 className="w-4 h-4 text-indigo-400" />
             <span>Active Property Inventory ({properties.length})</span>
@@ -357,11 +358,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <tr key={prop.id} className="hover:bg-slate-800/40 transition">
                     <td className="py-3.5 px-4 font-mono text-indigo-400 font-bold">{prop.id}</td>
                     <td className="py-3.5 px-4 font-semibold text-white">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <img
                           src={prop.imageUrl}
                           alt={prop.name}
-                          className="w-8 h-8 rounded object-cover border border-slate-700 shrink-0"
+                          className="w-9 h-9 rounded-lg object-cover border border-slate-700 shrink-0"
                         />
                         <span>{prop.name}</span>
                       </div>
@@ -398,11 +399,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Modal: Add New Property */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto animate-fade-in">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
-                  <Building2 className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
+                  <Building2 className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Add New RWA Property</h3>
@@ -414,14 +415,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   setIsModalOpen(false);
                   handleResetForm();
                 }}
-                className="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 rounded"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="bg-rose-950/60 border border-rose-500/40 rounded-lg p-3 text-xs text-rose-200 flex items-center gap-2">
+              <div className="bg-rose-950/60 border border-rose-500/40 rounded-xl p-3.5 text-xs text-rose-200 flex items-center gap-2.5">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 <span>{formError}</span>
               </div>
@@ -529,7 +530,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               {/* Share calculation preview */}
-              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 space-y-1 font-mono text-[11px]">
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-1 font-mono text-[11px]">
                 <div className="text-slate-400">Calculation Preview:</div>
                 <div className="flex justify-between text-slate-300">
                   <span>Price per Share:</span>
@@ -550,14 +551,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     setIsModalOpen(false);
                     handleResetForm();
                   }}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium"
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPublishing}
-                  className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold transition shadow-md shadow-indigo-600/30 flex items-center gap-2"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold transition shadow-md shadow-indigo-600/30 flex items-center gap-2"
                 >
                   {isPublishing ? (
                     <>

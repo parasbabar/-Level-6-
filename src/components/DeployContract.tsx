@@ -68,7 +68,6 @@ function getGroupIndex(stage: DeployStage): number {
   }
 }
 
-
 export const DeployContract: React.FC<DeployContractProps> = ({
   walletStatus,
   shieldedAddress,
@@ -101,7 +100,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 p-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900 to-purple-950/60 border border-indigo-500/30 p-8 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
@@ -119,7 +118,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             {isDeployed ? (
               <button
                 onClick={onNavigateToMarketplace}
@@ -168,7 +167,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
         {/* Left Column: Contract Metadata & Configuration */}
         <div className="space-y-6">
           {/* Architecture Card */}
-          <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-4">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
             <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
               <Cpu className="w-4 h-4" />
               <h2>Compact ZK Specification</h2>
@@ -181,7 +180,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
               </div>
               <div className="flex justify-between items-center py-2 border-b border-slate-800">
                 <span className="text-slate-400">Network</span>
-                <span className="font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                <span className="font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
                   Midnight Preprod
                 </span>
               </div>
@@ -205,14 +204,14 @@ export const DeployContract: React.FC<DeployContractProps> = ({
           </div>
 
           {/* Wallet Status Card */}
-          <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-4">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
                 <Layers className="w-4 h-4" />
                 <h2>Connected Wallet</h2>
               </div>
               <span
-                className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
+                className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full ${
                   isWalletConnected
                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                     : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
@@ -225,18 +224,18 @@ export const DeployContract: React.FC<DeployContractProps> = ({
             {isWalletConnected ? (
               <div className="space-y-2 text-xs">
                 <p className="text-slate-400">Shielded Address:</p>
-                <div className="font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-slate-300 break-all">
+                <div className="font-mono bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-300 break-all select-all">
                   {shieldedAddress}
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   Connect your Midnight Lace (1AM) wallet extension to deploy this contract on-chain.
                 </p>
                 <button
                   onClick={onConnectWallet}
-                  className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition"
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow-sm"
                 >
                   Connect Midnight Wallet
                 </button>
@@ -272,7 +271,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
 
                 <button
                   onClick={onClearAndRedeploy}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition"
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition"
                   title="Redeploy a new instance of the contract"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -282,8 +281,8 @@ export const DeployContract: React.FC<DeployContractProps> = ({
 
               {/* Contract Address */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Deployed Contract Address</label>
-                <div className="flex items-center gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 select-all">
+                <label className="text-xs font-semibold text-slate-400">Deployed Contract Address</label>
+                <div className="flex items-center gap-2 bg-slate-950 p-3.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300 select-all">
                   <span className="truncate flex-1">{deployState.result.contractAddress}</span>
                   <button
                     onClick={() => copyToClipboard(deployState.result!.contractAddress, 'address')}
@@ -332,7 +331,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
                 </div>
                 <button
                   onClick={onNavigateToMarketplace}
-                  className="w-full sm:w-auto whitespace-nowrap px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition"
+                  className="w-full sm:w-auto whitespace-nowrap px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition"
                 >
                   Proceed to RWA Marketplace &rarr;
                 </button>
@@ -341,7 +340,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
           )}
 
           {/* Deployment Pipeline Stepper */}
-          <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-6">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
                 <Terminal className="w-4 h-4" />
@@ -369,13 +368,13 @@ export const DeployContract: React.FC<DeployContractProps> = ({
                 <div className="flex gap-3 pt-2 border-t border-red-500/20">
                   <button
                     onClick={onDeploy}
-                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-xs transition"
+                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs transition"
                   >
                     Try Again
                   </button>
                   <button
                     onClick={onReset}
-                    className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition"
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition"
                   >
                     Dismiss
                   </button>
@@ -383,7 +382,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
               </div>
             )}
 
-            {/* Pipeline Stage List — 3 consolidated steps */}
+            {/* Pipeline Stage List */}
             <div className="space-y-3">
               {STAGES.map((group, idx) => {
                 let status: 'pending' | 'active' | 'completed' = 'pending';
@@ -404,7 +403,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
                         : 'bg-slate-950/30 border-slate-800/80 opacity-50'
                     }`}
                   >
-                    {/* Step number / icon */}
+                    {/* Step icon */}
                     <div className="flex-shrink-0">
                       {status === 'completed' ? (
                         <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40">
@@ -424,11 +423,15 @@ export const DeployContract: React.FC<DeployContractProps> = ({
                     {/* Step text */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className={`text-sm font-bold ${
-                          status === 'completed' ? 'text-emerald-300'
-                          : status === 'active' ? 'text-white'
-                          : 'text-slate-400'
-                        }`}>
+                        <h3
+                          className={`text-sm font-bold ${
+                            status === 'completed'
+                              ? 'text-emerald-300'
+                              : status === 'active'
+                              ? 'text-white'
+                              : 'text-slate-400'
+                          }`}
+                        >
                           {group.label}
                         </h3>
                         {status === 'active' && (
@@ -457,7 +460,7 @@ export const DeployContract: React.FC<DeployContractProps> = ({
                     href="https://faucet.preprod.midnight.network"
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1.5 transition w-full sm:w-auto"
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center justify-center gap-1.5 transition w-full sm:w-auto"
                   >
                     <span>Get Preprod Faucet</span>
                     <ExternalLink className="w-3 h-3" />

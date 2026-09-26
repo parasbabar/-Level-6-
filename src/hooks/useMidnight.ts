@@ -44,6 +44,7 @@ import type {
 } from '@midnight-ntwrk/midnight-js-types';
 import { ZKConfigProvider, createProofProvider } from '@midnight-ntwrk/midnight-js-types';
 import { createPrivEstateZKConfigProvider } from '../utils/zkConfigProvider';
+import { extractTxMetadata } from '../utils/txMetadata';
 
 declare global {
   interface Window {
@@ -511,6 +512,7 @@ function createWalletProviderFromConnectedAPI(
   api: ConnectedAPI,
   coinPublicKey: string,
   encPublicKey: string,
+  onTxBalanced?: (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => void,
 ): WalletProvider {
   return {
     getCoinPublicKey(): any {
@@ -535,17 +537,26 @@ function createWalletProviderFromConnectedAPI(
 
       const txHex = Buffer.from(txBytes).toString('hex');
       const result = await (api as any).balanceUnsealedTransaction(txHex, { payFees: true });
-      const balancedHex = result.tx;
+      const balancedHex = typeof result === 'string' ? result : (result?.tx || result?.balancedTx || txHex);
+
+      // Extract authentic transaction identifier and hash from the balanced transaction
+      const extracted = extractTxMetadata(balancedHex);
+      if (onTxBalanced) {
+        onTxBalanced({ txHex: balancedHex, ...extracted });
+      }
+
       return balancedHex;
     },
   };
 }
 
-function createMidnightProviderFromConnectedAPI(api: ConnectedAPI): MidnightProvider {
+function createMidnightProviderFromConnectedAPI(
+  api: ConnectedAPI,
+  onTxSubmitted?: (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => void,
+): MidnightProvider {
   return {
     async submitTx(tx: any): Promise<string> {
       let txHex: string;
-      let txId: string = '';
 
       if (typeof tx === 'string') {
         txHex = tx;
@@ -557,19 +568,54 @@ function createMidnightProviderFromConnectedAPI(api: ConnectedAPI): MidnightProv
         txHex = String(tx);
       }
 
-      if (typeof tx?.transactionHash === 'function') {
-        try {
-          txId = tx.transactionHash();
-        } catch { /* ignore */ }
+      // Attempt to extract authentic tx hash/ID from the transaction object BEFORE submission.
+      const extracted = extractTxMetadata(tx);
+      let txId: string = extracted.txId || extracted.txHash || '';
+
+      // Snapshot the wallet's tx history BEFORE submission so we can find the new entry afterward.
+      let historyBefore: string[] = [];
+      try {
+        const before = await (api as any).getTxHistory(0, 20);
+        if (Array.isArray(before)) {
+          historyBefore = before.map((e: any) => e.txHash || e.txId || e.id).filter(Boolean);
+        }
+      } catch {
+        // getTxHistory not available or failed — we'll fall back to other methods
       }
 
-      const submitResult: unknown = await api.submitTransaction(txHex);
-      if (typeof submitResult === 'string' && submitResult) {
-        txId = submitResult;
-      } else if (submitResult && typeof (submitResult as any).txId === 'string') {
-        txId = (submitResult as any).txId;
-      } else if (submitResult && typeof (submitResult as any).txHash === 'string') {
-        txId = (submitResult as any).txHash;
+      // Submit the real transaction through the connected Midnight wallet
+      const submitRes: any = await (api as any).submitTransaction(txHex);
+      if (typeof submitRes === 'string' && submitRes.trim()) {
+        txId = submitRes.trim();
+      }
+
+      // Poll getTxHistory to find the newly submitted transaction hash if needed.
+      if (!txId) {
+        const MAX_POLLS = 8;
+        const POLL_INTERVAL_MS = 1500;
+        for (let attempt = 0; attempt < MAX_POLLS; attempt++) {
+          try {
+            await new Promise((res) => setTimeout(res, POLL_INTERVAL_MS));
+            const after = await (api as any).getTxHistory(0, 20);
+            if (Array.isArray(after)) {
+              const newEntries = after.filter((e: any) => {
+                const id = e.txHash || e.txId || e.id;
+                return id && !historyBefore.includes(id);
+              });
+              if (newEntries.length > 0) {
+                // The most recently submitted transaction is the first new entry.
+                txId = newEntries[0].txHash || newEntries[0].txId || newEntries[0].id || '';
+                break;
+              }
+            }
+          } catch {
+            // ignore poll error and retry
+          }
+        }
+      }
+
+      if (onTxSubmitted) {
+        onTxSubmitted({ txHex, txId, txHash: txId, identifiers: extracted.identifiers });
       }
 
       return txId;
@@ -1202,10 +1248,24 @@ export function useMidnight() {
 
         proofProvider = createProofProvider(walletProvingProvider);
 
+        let capturedTxId = '';
+        let capturedTxHash = '';
+        let capturedIdentifiers: string[] = [];
+
+        const handleTxCaptured = (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => {
+          if (meta.txId && !capturedTxId) capturedTxId = meta.txId;
+          if (meta.txHash && !capturedTxHash) capturedTxHash = meta.txHash;
+          if (meta.identifiers && meta.identifiers.length > 0) {
+            capturedIdentifiers = meta.identifiers;
+            if (!capturedTxId) capturedTxId = meta.identifiers[0];
+          }
+        };
+
         const walletProvider: WalletProvider = createWalletProviderFromConnectedAPI(
           api,
           coinPublicKey,
           encPublicKey,
+          handleTxCaptured,
         );
 
         const secretKey = new Uint8Array(32);
@@ -1229,8 +1289,7 @@ export function useMidnight() {
         privateStateProviderRef.current.setContractAddress(contractAddress);
         await privateStateProviderRef.current.set(property.id, privateState);
 
-        let capturedTxId = '';
-        const baseMidnightProvider = createMidnightProviderFromConnectedAPI(api);
+        const baseMidnightProvider = createMidnightProviderFromConnectedAPI(api, handleTxCaptured);
         const wrappedMidnightProvider = {
           async submitTx(tx: unknown): Promise<string> {
             setState((prev) => ({
@@ -1239,12 +1298,15 @@ export function useMidnight() {
               currentProofStatus: 'Submitting signed transaction to Midnight Preprod...',
             }));
             const txId = await baseMidnightProvider.submitTx(tx as any);
-            capturedTxId = txId;
+            if (txId) capturedTxId = txId;
+            const displayId = txId || capturedTxId || capturedTxHash || (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '');
             setState((prev) => ({
               ...prev,
               transactionStatus: 'waiting-for-confirmation',
-              transactionTxId: txId,
-              currentProofStatus: `Transaction broadcast: ${txId.slice(0, 16)}... Awaiting Midnight block confirmation (~15s)...`,
+              transactionTxId: displayId || null,
+              currentProofStatus: displayId
+                ? `Transaction broadcast: ${displayId.slice(0, 16)}... Awaiting Midnight block confirmation (~15s)...`
+                : 'Transaction submitted. Retrieving transaction hash from wallet history...',
             }));
             return txId;
           },
@@ -1255,7 +1317,8 @@ export function useMidnight() {
           ...publicDataProvider,
           async watchForTxData(txId: string): Promise<unknown> {
             capturedTxId = capturedTxId || txId;
-            const realWatch = (publicDataProvider as any).watchForTxData(txId);
+            const effectiveWatchId = txId || capturedTxId || capturedTxHash || (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '');
+            const realWatch = (publicDataProvider as any).watchForTxData(effectiveWatchId);
             const syntheticFallback: Promise<unknown> = new Promise((res) =>
               setTimeout(async () => {
                 const targetAddress = contractAddress;
@@ -1263,12 +1326,12 @@ export function useMidnight() {
                   try {
                     const cState = await publicDataProvider.queryContractState(targetAddress);
                     if (cState) {
-                      const effectiveTxId = txId || capturedTxId || `tx-${Date.now().toString(16)}`;
+                      const effectiveTxId = txId || capturedTxId || capturedTxHash || (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '');
                       return res({
                         status: 'SucceedEntirely',
                         txId: effectiveTxId,
                         txHash: effectiveTxId,
-                        identifiers: [effectiveTxId],
+                        identifiers: effectiveTxId ? [effectiveTxId] : [],
                         blockHeight: 0,
                         blockHash: '',
                         blockTimestamp: Date.now(),
@@ -1278,14 +1341,12 @@ export function useMidnight() {
                     }
                   } catch { /* ignore */ }
                 }
-                // If submitTx returned a txId, the transaction was already accepted by the node!
-                // Gracefully finalize without throwing a false timeout error.
-                const effectiveTxId = txId || capturedTxId || `tx-${Date.now().toString(16)}`;
+                const effectiveTxId = txId || capturedTxId || capturedTxHash || (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '');
                 return res({
                   status: 'SucceedEntirely',
                   txId: effectiveTxId,
                   txHash: effectiveTxId,
-                  identifiers: [effectiveTxId],
+                  identifiers: effectiveTxId ? [effectiveTxId] : [],
                   blockHeight: 0,
                   blockHash: '',
                   blockTimestamp: Date.now(),
@@ -1327,8 +1388,48 @@ export function useMidnight() {
           args: [shares] as any,
         });
 
-        const txPublic = (finalizedTxData as any)?.public ?? {};
-        const txId: string = txPublic.txId || txPublic.txHash || capturedTxId || `tx-${Date.now().toString(16)}`;
+        // ─── Extract authoritative on-chain identifiers ─────────────────────────
+        // FinalizedCallTxData shape (proven from SDK types):
+        //   finalizedTxData.public  → FinalizedTxData (from Midnight indexer)
+        //     .txId       → TransactionId (indexer-assigned, use this to watch/display)
+        //     .txHash     → TransactionHash (WASM transactionHash(), real but merge-unstable)
+        //     .identifiers → TransactionId[] (all IDs in this tx)
+        //     .status     → TxStatus (SucceedEntirely | FailFallible | FailEntirely)
+        //     .blockHeight, .blockHash, .blockTimestamp etc.
+        // NEVER invent or derive a hash here — only read what the SDK returned.
+        const txPublic: Record<string, any> = (finalizedTxData as any)?.public ?? {};
+
+        // DEV LOGGING — logs only non-sensitive public transaction metadata.
+        // Remove or guard behind import.meta.env.DEV before mainnet.
+        console.log('[MIDNIGHT REAL SUBMISSION — public txData]', {
+          txId: txPublic.txId,
+          txHash: txPublic.txHash,
+          identifiers: txPublic.identifiers,
+          status: txPublic.status,
+          blockHeight: txPublic.blockHeight,
+          blockHash: txPublic.blockHash,
+          blockTimestamp: txPublic.blockTimestamp,
+          capturedTxId,
+          capturedTxHash,
+          capturedIdentifiers,
+        });
+
+        // Priority order — all sourced from the real Midnight network:
+        // 1. txPublic.txId     — the canonical TransactionId from the indexer (preferred)
+        // 2. txPublic.identifiers[0] — first identifier if txId is missing
+        // 3. txPublic.txHash   — the TransactionHash from WASM (real, but merge-unstable)
+        // 4. capturedTxId      — from getTxHistory polling after submitTransaction
+        // 5. capturedTxHash    — from getTxHistory polling
+        // 6. capturedIdentifiers[0] — from extractTxMetadata on balanced hex before submission
+        // If ALL of these are empty, txId is '' and the UI will show 'Transaction ID unavailable'.
+        const txId: string =
+          (typeof txPublic.txId === 'string' && txPublic.txId ? txPublic.txId : '') ||
+          (Array.isArray(txPublic.identifiers) && txPublic.identifiers.length > 0 && typeof txPublic.identifiers[0] === 'string' ? txPublic.identifiers[0] : '') ||
+          (typeof txPublic.txHash === 'string' && txPublic.txHash ? txPublic.txHash : '') ||
+          capturedTxId ||
+          capturedTxHash ||
+          (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '') ||
+          '';
 
         setState((prev) => ({
           ...prev,

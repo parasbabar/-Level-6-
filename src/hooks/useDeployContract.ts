@@ -38,6 +38,7 @@ import {
   createWitnesses,
   type PrivEstatePrivateState,
 } from '../utils/contract';
+import { extractTxMetadata } from '../utils/txMetadata';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,7 @@ function createWalletProviderFromConnectedAPI(
   api: ConnectedAPI,
   coinPublicKey: string,
   encPublicKey: string,
+  onTxBalanced?: (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => void,
 ): WalletProvider {
   return {
     getCoinPublicKey(): any { return coinPublicKey as any; },
@@ -148,18 +150,23 @@ function createWalletProviderFromConnectedAPI(
       }).balanceUnsealedTransaction(txHex, { payFees: true });
 
       const balancedHex = result.tx;
-      // Return hex string directly — Transaction.deserialize requires type markers
-      // not available at this call site, and downstream code handles hex strings.
+      const extracted = extractTxMetadata(balancedHex);
+      if (onTxBalanced) {
+        onTxBalanced({ txHex: balancedHex, ...extracted });
+      }
+
       return balancedHex;
     },
   } as any;
 }
 
-function createMidnightProviderFromConnectedAPI(api: ConnectedAPI): MidnightProvider {
+function createMidnightProviderFromConnectedAPI(
+  api: ConnectedAPI,
+  onTxSubmitted?: (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => void,
+): MidnightProvider {
   return {
     async submitTx(tx: any): Promise<string> {
       let txHex: string;
-      let txId: string = '';
 
       if (typeof tx === 'string') {
         txHex = tx;
@@ -171,11 +178,8 @@ function createMidnightProviderFromConnectedAPI(api: ConnectedAPI): MidnightProv
         txHex = String(tx);
       }
 
-      if (typeof tx?.transactionHash === 'function') {
-        try {
-          txId = tx.transactionHash();
-        } catch { /* ignore */ }
-      }
+      const extracted = extractTxMetadata(tx);
+      let txId: string = extracted.txId || extracted.txHash || '';
 
       const submitResult: unknown = await api.submitTransaction(txHex);
       if (typeof submitResult === 'string' && submitResult) {
@@ -184,6 +188,10 @@ function createMidnightProviderFromConnectedAPI(api: ConnectedAPI): MidnightProv
         txId = (submitResult as any).txId;
       } else if (submitResult && typeof (submitResult as any).txHash === 'string') {
         txId = (submitResult as any).txHash;
+      }
+
+      if (onTxSubmitted) {
+        onTxSubmitted({ txHex, txId, txHash: extracted.txHash || txId, identifiers: extracted.identifiers });
       }
 
       return txId;
@@ -400,10 +408,22 @@ export function useDeployContract(connectedApi: ConnectedAPI | null) {
       // valid FinalizedTxData so the SDK resolves immediately once the tx is on-
       // chain rather than waiting indefinitely for the indexer to catch up.
 
-      const baseWalletProvider = createWalletProviderFromConnectedAPI(api, coinPublicKey, encPublicKey);
-      const baseMidnightProvider = createMidnightProviderFromConnectedAPI(api);
       let capturedTxId = '';
+      let capturedTxHash = '';
       let capturedContractAddress = '';
+      let capturedIdentifiers: string[] = [];
+
+      const handleTxCaptured = (meta: { txHex: string; txId: string; txHash: string; identifiers: string[] }) => {
+        if (meta.txId && !capturedTxId) capturedTxId = meta.txId;
+        if (meta.txHash && !capturedTxHash) capturedTxHash = meta.txHash;
+        if (meta.identifiers && meta.identifiers.length > 0) {
+          capturedIdentifiers = meta.identifiers;
+          if (!capturedTxId) capturedTxId = meta.identifiers[0];
+        }
+      };
+
+      const baseWalletProvider = createWalletProviderFromConnectedAPI(api, coinPublicKey, encPublicKey, handleTxCaptured);
+      const baseMidnightProvider = createMidnightProviderFromConnectedAPI(api, handleTxCaptured);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const wrappedWalletProvider: any = {
@@ -449,12 +469,12 @@ export function useDeployContract(connectedApi: ConnectedAPI | null) {
                 try {
                   const state = await publicDataProvider.queryContractState(capturedContractAddress);
                   if (state) {
-                    const effectiveTxId = txId || capturedTxId || `tx-${Date.now().toString(16)}`;
+                    const effectiveTxId = txId || capturedTxId || '';
                     return res({
                       status: 'SucceedEntirely',
                       txId: effectiveTxId,
                       txHash: effectiveTxId,
-                      identifiers: [effectiveTxId],
+                      identifiers: effectiveTxId ? [effectiveTxId] : [],
                       blockHeight: 0,
                       blockHash: '',
                       blockTimestamp: Date.now(),
@@ -482,12 +502,12 @@ export function useDeployContract(connectedApi: ConnectedAPI | null) {
               try {
                 const state = await publicDataProvider.queryContractState(contractAddress);
                 if (state) {
-                  const effectiveTxId = capturedTxId || `tx-${Date.now().toString(16)}`;
+                  const effectiveTxId = capturedTxId || '';
                   return res({
                     status: 'SucceedEntirely',
                     txId: effectiveTxId,
                     txHash: effectiveTxId,
-                    identifiers: [effectiveTxId],
+                    identifiers: effectiveTxId ? [effectiveTxId] : [],
                     blockHeight: 0,
                     blockHash: '',
                     blockTimestamp: Date.now(),
@@ -544,7 +564,7 @@ export function useDeployContract(connectedApi: ConnectedAPI | null) {
       }).deployTxData?.public;
 
       const contractAddress = txData?.contractAddress || capturedContractAddress;
-      const txId = txData?.txId ?? txData?.txHash ?? capturedTxId;
+      const txId = txData?.txId || txData?.txHash || capturedTxId || capturedTxHash || (capturedIdentifiers.length > 0 ? capturedIdentifiers[0] : '');
 
       if (!contractAddress) {
         throw new Error('Deployment completed but no contract address was returned. Check the 1AM Explorer for your transaction.');

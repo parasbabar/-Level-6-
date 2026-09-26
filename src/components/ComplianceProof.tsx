@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Lock, CheckCircle2, RefreshCw, AlertCircle, Info } from 'lucide-react';
+import { Award, Lock, CheckCircle2, RefreshCw, AlertCircle, Info, TrendingUp, ShieldCheck } from 'lucide-react';
 import type { PropertyMetadata, InvestorPrivateHolding, VerificationResult } from '../utils/contract';
 
 interface ComplianceProofProps {
@@ -64,10 +64,10 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl">
-        {/* Mode Selector */}
-        <div className="flex items-center gap-2 mb-6 p-1 bg-slate-950 rounded-lg border border-slate-800 w-fit">
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-xl space-y-6">
+        {/* Mode Selector Tabs */}
+        <div className="flex items-center gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 w-fit">
           <button
             type="button"
             onClick={() => {
@@ -75,7 +75,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
               setLastResult(null);
               setExecutionError(null);
             }}
-            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition ${
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               proofMode === 'compliance'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
@@ -90,7 +90,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
               setLastResult(null);
               setExecutionError(null);
             }}
-            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition ${
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
               proofMode === 'rental'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
@@ -100,10 +100,10 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
           </button>
         </div>
 
-        {/* Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Award className="w-6 h-6" />
+        {/* Title & Explainer */}
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            {proofMode === 'compliance' ? <Award className="w-7 h-7" /> : <TrendingUp className="w-7 h-7" />}
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">
@@ -111,7 +111,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
                 ? 'Verifiable Investor Compliance & Accreditation'
                 : 'Confidential Rental Yield Proof'}
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
               {proofMode === 'compliance'
                 ? 'Prove you meet regulatory accreditation criteria without revealing your net worth or total capital.'
                 : 'Prove your property rental distribution satisfies yield benchmarks without disclosing private earnings.'}
@@ -120,10 +120,10 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Property Selector */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
               Associated Property Offering
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -138,14 +138,17 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
                       setLastResult(null);
                       setExecutionError(null);
                     }}
-                    className={`p-3.5 rounded-lg border text-left transition flex flex-col justify-between ${
+                    className={`p-4 rounded-xl border text-left transition flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-emerald-600/10 border-emerald-500 text-white shadow-md'
-                        : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                        ? 'bg-emerald-600/10 border-emerald-500 text-white shadow-lg'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
                     }`}
                   >
-                    <span className="font-bold text-xs truncate text-white">{prop.name}</span>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400 mt-1">
+                    <div>
+                      <span className="font-bold text-xs truncate text-white block">{prop.name}</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5 block">{prop.location}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400 mt-2 pt-2 border-t border-slate-800/60">
                       <span>
                         {proofMode === 'compliance'
                           ? `Req: $${prop.complianceMinimumUsd.toLocaleString()}`
@@ -160,42 +163,42 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
           </div>
 
           {/* Privacy Callout */}
-          <div className="p-4 rounded-lg bg-slate-950/70 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-slate-300">
-              <Lock className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 text-slate-300">
+              <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>
                 {proofMode === 'compliance' ? (
                   <>
                     Your Private Investment Capital:{' '}
-                    <strong className="text-white">
+                    <strong className="text-white font-mono">
                       ${holding?.investmentAmountUsd != null ? holding.investmentAmountUsd.toLocaleString() : '0'}
                     </strong>
                   </>
                 ) : (
                   <>
                     Your Confidential Rental Income:{' '}
-                    <strong className="text-white">
+                    <strong className="text-white font-mono">
                       ${holding?.annualRentalIncomeUsd != null ? holding.annualRentalIncomeUsd.toLocaleString() : '0'}/yr
                     </strong>
                   </>
                 )}
               </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 self-start sm:self-auto">
               🔒 Shielded Witness
             </span>
           </div>
 
           {/* Zero Holding Callout */}
           {!hasHolding && (
-            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-start gap-2.5">
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-start gap-3">
                 <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-white block">
+                  <strong className="text-white block font-semibold">
                     {proofMode === 'compliance' ? 'No Investment Capital Found' : 'No Rental Income Stream Found'}
                   </strong>
-                  <span className="text-slate-300 mt-0.5 block">
+                  <span className="text-amber-300/80 mt-0.5 block leading-relaxed">
                     You currently have no private holdings registered for {currentProperty.name}. Acquire fractional shares in the RWA Marketplace to establish verifiable capital and rental distributions.
                   </span>
                 </div>
@@ -204,7 +207,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
                 <button
                   type="button"
                   onClick={onNavigateToMarketplace}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs whitespace-nowrap shadow transition shrink-0"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs whitespace-nowrap shadow-md transition shrink-0"
                 >
                   Acquire Shares
                 </button>
@@ -214,8 +217,8 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
 
           {/* Preset Requirements */}
           {proofMode === 'compliance' ? (
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <div className="space-y-2.5">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Select Regulatory Benchmark
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -229,9 +232,9 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
                     type="button"
                     onClick={() => setMinimumRequirement(tier.amount)}
                     disabled={!hasHolding}
-                    className={`p-3 rounded-lg border text-left transition ${
+                    className={`p-3.5 rounded-xl border text-left transition ${
                       minimumRequirement === tier.amount
-                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
                         : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                     } ${!hasHolding ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
@@ -242,8 +245,8 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
               </div>
             </div>
           ) : (
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <div className="space-y-2.5">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Select Annual Rental Claim Benchmark
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -257,9 +260,9 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
                     type="button"
                     onClick={() => setMinimumYieldRequirement(tier.amount)}
                     disabled={!hasHolding}
-                    className={`p-3 rounded-lg border text-left transition ${
+                    className={`p-3.5 rounded-xl border text-left transition ${
                       minimumYieldRequirement === tier.amount
-                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
                         : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                     } ${!hasHolding ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
@@ -275,12 +278,12 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
           <button
             type="submit"
             disabled={isGenerating || !hasHolding}
-            className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Evaluating Midnight Circuit...</span>
+                <span>Evaluating Midnight Circuit & Witness...</span>
               </>
             ) : !hasHolding ? (
               <>
@@ -289,11 +292,11 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
               </>
             ) : (
               <>
-                <Award className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4" />
                 <span>
                   {proofMode === 'compliance'
-                    ? 'Generate Compliance Proof'
-                    : 'Generate Rental Yield Proof'}
+                    ? 'Generate Compliance ZK Proof'
+                    : 'Generate Rental Yield ZK Proof'}
                 </span>
               </>
             )}
@@ -302,7 +305,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
 
         {/* Live Generating Progress Indicator */}
         {isGenerating && proofStatus && (
-          <div className="mt-4 p-4 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-center gap-3">
+          <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200 flex items-center gap-3">
             <RefreshCw className="w-4 h-4 animate-spin text-emerald-400 shrink-0" />
             <span className="font-mono">{proofStatus}</span>
           </div>
@@ -310,7 +313,7 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
 
         {/* Error State */}
         {executionError && (
-          <div className="mt-4 p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-start gap-3">
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-rose-200">
@@ -326,23 +329,23 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
           </div>
         )}
 
-        {/* Success */}
+        {/* Success Display */}
         {lastResult && (
-          <div className="mt-6 p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/40 space-y-4">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+          <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-500/40 space-y-4 shadow-xl">
+            <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
               <CheckCircle2 className="w-5 h-5" />
-              <span>✓ Cryptographically Validated by Midnight Circuit</span>
+              <span>Cryptographically Validated by Midnight Circuit</span>
             </div>
 
-            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 text-xs space-y-2.5">
+            <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs space-y-2.5">
               <div className="flex justify-between items-center text-slate-300">
                 <span className="text-slate-400">Claim Verified:</span>
                 <span className="font-semibold text-white">{lastResult.publicClaim}</span>
               </div>
               <div className="flex justify-between items-center text-slate-300">
                 <span className="text-slate-400">Underlying Financial Amount:</span>
-                <span className="font-bold font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  NOT DISCLOSED (🔒 PRIVATE)
+                <span className="font-bold font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+                  NOT DISCLOSED (🔒 SHIELDED)
                 </span>
               </div>
               <div className="flex justify-between items-center text-slate-300">
@@ -351,15 +354,15 @@ export const ComplianceProof: React.FC<ComplianceProofProps> = ({
               </div>
               <div className="flex justify-between items-center text-slate-300">
                 <span className="text-slate-400">Regulator Verification Commitment:</span>
-                <span className="font-mono text-slate-400 truncate max-w-[280px]">
+                <span className="font-mono text-slate-300 truncate max-w-[280px]">
                   {lastResult.proofHash}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20 text-xs text-emerald-300 flex items-start gap-2">
+            <div className="p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-xs text-emerald-300 flex items-start gap-2.5">
               <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>
+              <span className="leading-relaxed">
                 Auditors can confirm you satisfy regulatory or financial thresholds without receiving access to your bank statements, tax returns, or private distribution accounts.
               </span>
             </div>
