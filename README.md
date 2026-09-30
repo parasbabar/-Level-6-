@@ -81,7 +81,7 @@ Collect New Feedback & Extend Evidence (users.md & feedback.md)
 | 🌐 **Midnight Block Explorer** | [https://explorer.preprod.midnight.network/](https://explorer.preprod.midnight.network/) | Midnight Preprod Explorer |
 | 📋 **Feedback Analysis Report** | [feedback.md](feedback.md) | Level 5 feedback themes & Level 6 improvements |
 | 👥 **Preprod User Evidence** | [users.md](users.md) | 70 genuine Midnight Preprod user validation records |
-| 🎥 **MVP Demo Video** | [PrivEstate Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing) | Walkthrough of MVP functionality |
+| 🎥 **MVP Demo Video** | [PrivEstate Walkthrough](https://drive.google.com/file/d/1j-He6XNdCVfglaZxS6sG9sNXHQsXYxFD/view?usp=sharing) | Walkthrough of MVP functionality |
 | ⚙️ **CI/CD Pipeline** | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Automated Vitest test suite and Vite build |
 
 ---
@@ -474,7 +474,7 @@ Level-6-/
 
 ## 🎥 Demo
 
-* **Demo Video**: [▶️ Watch  PrivEstate MVP Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing)
+* **Demo Video**: [▶️ Watch  PrivEstate MVP Walkthrough](https://drive.google.com/file/d/1j-He6XNdCVfglaZxS6sG9sNXHQsXYxFD/view?usp=sharing)
 * **X Demo Post**: [View on X (@PrivEstate)](https://x.com/PrivEstate/status/2098676086213329125)
 
 ### Recommended Demo Flow
@@ -510,7 +510,7 @@ PrivEstate updates and development milestones will be published to the official 
 - [x] **Comprehensive documentation**: [docs/USAGE.md](docs/USAGE.md), [PROPOSAL.md](PROPOSAL.md), [feedback.md](feedback.md), and [users.md](users.md)
 - [x] **CI/CD workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml) validating tests and production builds
 - [x] **Meaningful commits in repository history**: 46+ verified commits
-- [x] **Demo video showing full MVP functionality**: [PrivEstate MVP Walkthrough](https://drive.google.com/file/d/103JZ96YOBS3C2qJ-oy2kAou5i3Md6Oy2/view?usp=sharing)
+- [x] **Demo video showing full MVP functionality**: [PrivEstate MVP Walkthrough](https://drive.google.com/file/d/1j-He6XNdCVfglaZxS6sG9sNXHQsXYxFD/view?usp=sharing)
 - [x] **Product X profile**: [@PrivEstate](https://x.com/PrivEstate)
 
 ---
