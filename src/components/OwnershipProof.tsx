@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, CheckCircle2, RefreshCw, AlertCircle, Info } from 'lucide-react';
+import {
+  ShieldCheck, Lock, CheckCircle2, RefreshCw,
+  AlertCircle, Info, ArrowRight,
+} from 'lucide-react';
 import type { PropertyMetadata, InvestorPrivateHolding, VerificationResult } from '../utils/contract';
 
 interface OwnershipProofProps {
@@ -8,282 +11,270 @@ interface OwnershipProofProps {
   portfolio: Record<string, InvestorPrivateHolding>;
   isGenerating: boolean;
   proofStatus: string | null;
-  onSelectProperty: (property: PropertyMetadata) => void;
-  onGenerateProof: (property: PropertyMetadata, thresholdPercentage: number) => Promise<VerificationResult>;
+  onSelectProperty: (p: PropertyMetadata) => void;
+  onGenerateProof: (p: PropertyMetadata, threshold: number) => Promise<VerificationResult>;
   onNavigateToMarketplace?: () => void;
 }
 
 export const OwnershipProof: React.FC<OwnershipProofProps> = ({
-  properties,
-  selectedProperty,
-  portfolio,
-  isGenerating,
-  proofStatus,
-  onSelectProperty,
-  onGenerateProof,
-  onNavigateToMarketplace,
+  properties, selectedProperty, portfolio, isGenerating, proofStatus,
+  onSelectProperty, onGenerateProof, onNavigateToMarketplace,
 }) => {
-  const currentProperty = selectedProperty || properties[0];
-  const holding = portfolio[currentProperty.id];
-  const hasHoldings = Boolean(holding && holding.ownershipShares > 0n);
+  const prop = selectedProperty || properties[0];
+  const holding = prop ? portfolio[prop.id] : undefined;
+  const hasHolding = Boolean(holding && holding.ownershipShares > 0n);
 
-  const [threshold, setThreshold] = useState<number>(10);
-  const [lastResult, setLastResult] = useState<VerificationResult | null>(null);
-  const [executionError, setExecutionError] = useState<string | null>(null);
+  const [threshold, setThreshold] = useState(10);
+  const [result, setResult] = useState<VerificationResult | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-  const actualOwnershipPercentage = holding && currentProperty.totalShares > 0n
-    ? (Number(holding.ownershipShares * 10000n / currentProperty.totalShares) / 100)
+  const actualPct = holding && prop && prop.totalShares > 0n
+    ? Number(holding.ownershipShares * 10000n / prop.totalShares) / 100
     : 0;
+
+  const eligible = hasHolding && actualPct >= threshold;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasHoldings) return;
-    setExecutionError(null);
-    setLastResult(null);
-
+    if (!prop || !hasHolding) return;
+    setErr(null); setResult(null);
     try {
-      const res = await onGenerateProof(currentProperty, threshold);
-      setLastResult(res);
-    } catch (err: any) {
-      setExecutionError(err.message || 'Verification failed. Constraint not satisfied.');
+      const res = await onGenerateProof(prop, threshold);
+      setResult(res);
+    } catch (ex: unknown) {
+      setErr((ex as Error).message || 'Circuit constraint not satisfied.');
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-xl space-y-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <ShieldCheck className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-white">Zero-Knowledge Ownership Proof</h2>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                Midnight Compact ZK
-              </span>
+    <form onSubmit={handleSubmit}>
+      <div className="page-gap">
+
+        {/* Header */}
+        <div className="page-header">
+          <div className="page-header-left">
+            <div className="page-icon page-icon-violet">
+              <ShieldCheck style={{ width: 26, height: 26, color: 'var(--violet-light)' }} />
             </div>
-            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
-              Prove to lenders or counterparties that you own at least a target percentage without revealing your exact share count or raw asset balance.
-            </p>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-          {/* Property Selector */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-              Select Tokenized Property
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {properties.map((prop) => {
-                const isSelected = prop.id === currentProperty.id;
-                const propHolding = portfolio[prop.id];
-                const propHasShares = Boolean(propHolding && propHolding.ownershipShares > 0n);
-
-                return (
-                  <button
-                    key={prop.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectProperty(prop);
-                      setLastResult(null);
-                      setExecutionError(null);
-                    }}
-                    className={`p-4 rounded-xl border text-left transition flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-indigo-600/10 border-indigo-500 text-white shadow-lg'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs truncate text-white">{prop.name}</span>
-                        {propHasShares && (
-                          <span className="w-2 h-2 rounded-full bg-emerald-400" title="You hold shares" />
-                        )}
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{prop.location}</div>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-indigo-400 mt-2 pt-2 border-t border-slate-800/60">
-                      <span>{prop.id}</span>
-                      <span className="text-slate-400">{prop.availableShares.toLocaleString()} avail.</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Privacy Witness Callout */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2.5 text-slate-300">
-              <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>
-                Your Shielded Private Holding:{' '}
-                <strong className="text-white font-mono">{actualOwnershipPercentage.toFixed(2)}%</strong>{' '}
-                ({holding?.ownershipShares != null ? holding.ownershipShares.toLocaleString() : '0'} shares)
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 self-start sm:self-auto">
-              🔒 Shielded Witness
-            </span>
-          </div>
-
-          {/* Zero Holdings Guidance Callout */}
-          {!hasHoldings && (
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block font-semibold">No Private Shares Held in {currentProperty.name}</strong>
-                  <span className="text-amber-300/80 mt-0.5 block leading-relaxed">
-                    Zero-Knowledge circuits require private witness inputs. Acquire fractional shares through your connected Midnight Lace Wallet in the RWA Marketplace before generating an ownership proof.
-                  </span>
-                </div>
-              </div>
-              {onNavigateToMarketplace && (
-                <button
-                  type="button"
-                  onClick={onNavigateToMarketplace}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs whitespace-nowrap shadow-md transition shrink-0"
-                >
-                  Acquire Shares
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Threshold Selection */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Public Ownership Claim Threshold
-              </label>
-              <span className="text-sm font-bold font-mono text-indigo-400">
-                I own at least {threshold}%
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {[5, 10, 15, 20].map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => setThreshold(val)}
-                  disabled={!hasHoldings}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition ${
-                    threshold === val
-                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
-                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                  } ${!hasHoldings ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {val}%
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="range"
-              min="1"
-              max="50"
-              step="1"
-              value={threshold}
-              disabled={!hasHoldings}
-              onChange={(e) => setThreshold(Number(e.target.value))}
-              className={`w-full accent-indigo-500 cursor-pointer ${
-                !hasHoldings ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isGenerating || !hasHoldings}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-bold text-xs shadow-lg shadow-indigo-950/50 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Evaluating Midnight Circuit & Witness...</span>
-              </>
-            ) : !hasHoldings ? (
-              <>
-                <Lock className="w-4 h-4" />
-                <span>Holdings Required to Prove (0 shares held)</span>
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-4 h-4" />
-                <span>Generate & Verify ZK Proof</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Live Generating Progress Indicator */}
-        {isGenerating && proofStatus && (
-          <div className="p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-200 flex items-center gap-3">
-            <RefreshCw className="w-4 h-4 animate-spin text-indigo-400 shrink-0" />
-            <span className="font-mono">{proofStatus}</span>
-          </div>
-        )}
-
-        {/* Error State */}
-        {executionError && (
-          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-start gap-3">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-rose-200">Circuit Assertion Failed</p>
-              <p className="mt-0.5">{executionError}</p>
-              <p className="mt-1 text-slate-400">
-                The constraint <code className="text-rose-300 font-mono">investorOwnership &gt;= {threshold}%</code> was not met by your private witness. The proof was rejected by the Midnight circuit.
+              <h1 className="page-title">Zero-Knowledge Ownership Proof</h1>
+              <p className="page-subtitle">
+                Prove you own at least a target percentage of a property without revealing your exact share count.
               </p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Verification Success Display */}
-        {lastResult && (
-          <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-500/40 space-y-4 shadow-xl">
-            <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
-              <CheckCircle2 className="w-5 h-5" />
-              <span>Proof Generated & Claim Verified via Midnight Circuit</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 'var(--sp-6)', alignItems: 'start' }}>
+
+          {/* Left */}
+          <div className="section-gap">
+
+            {/* Property selector */}
+            <div className="card">
+              <p className="section-label" style={{ marginBottom: 'var(--sp-4)' }}>Select Property</p>
+              <div className="grid-3" style={{ gap: 'var(--sp-4)' }}>
+                {properties.map(p => {
+                  const sel = p.id === prop?.id;
+                  const h = portfolio[p.id];
+                  const hasShares = Boolean(h && h.ownershipShares > 0n);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => { onSelectProperty(p); setResult(null); setErr(null); }}
+                      className={`sel-card ${sel ? 'selected-violet' : ''} ${sel ? 'check-icon' : ''}`}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-1)', marginBottom: 'var(--sp-1)' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-4)' }}>{p.location}</div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--sp-3)', borderTop: '1px solid var(--border)', fontSize: '0.75rem' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: sel ? 'var(--violet-light)' : 'var(--text-5)' }}>{p.id}</span>
+                        {hasShares && <span className="badge badge-green" style={{ fontSize: '0.5625rem' }}>Holding</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs space-y-2.5">
-              <div className="flex justify-between items-center text-slate-300">
-                <span className="text-slate-400">Public Claim:</span>
-                <span className="font-semibold text-white">{lastResult.publicClaim}</span>
+            {/* No holding */}
+            {!hasHolding && prop && (
+              <div className="alert alert-amber">
+                <AlertCircle style={{ width: 18, height: 18, color: 'var(--amber)', flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 'var(--sp-1)' }}>No shares held in {prop.name}</p>
+                  <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                    ZK circuits need private witness data. Acquire shares in the Marketplace first.
+                  </p>
+                </div>
+                {onNavigateToMarketplace && (
+                  <button type="button" onClick={onNavigateToMarketplace} className="btn btn-primary btn-sm">
+                    Marketplace <ArrowRight style={{ width: 13, height: 13 }} />
+                  </button>
+                )}
               </div>
-              <div className="flex justify-between items-center text-slate-300">
-                <span className="text-slate-400">Circuit Evaluated:</span>
-                <span className="font-mono text-indigo-400">{lastResult.zkirCircuit}</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-300">
-                <span className="text-slate-400">ZK Identity Commitment:</span>
-                <span className="font-mono text-emerald-400 truncate max-w-[280px]">
-                  {lastResult.proofHash}
+            )}
+
+            {/* Threshold */}
+            <div className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-4)' }}>
+                <p className="section-label">Ownership Threshold Claim</p>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1.0625rem', color: 'var(--violet-light)' }}>
+                  I own ≥ {threshold}%
                 </span>
               </div>
-              <div className="flex justify-between items-center text-slate-300">
-                <span className="text-slate-400">Public Ledger Update:</span>
-                <span className="font-semibold text-emerald-400">✓ Audit Log Counter Incremented</span>
+
+              <div style={{ display: 'flex', gap: 'var(--sp-3)', marginBottom: 'var(--sp-4)' }}>
+                {[5, 10, 15, 20].map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    disabled={!hasHolding}
+                    onClick={() => setThreshold(v)}
+                    className={`btn ${threshold === v ? 'btn-violet' : 'btn-ghost'} btn-sm`}
+                    style={{ flex: 1 }}
+                  >
+                    {v}%
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="range" min={1} max={50} step={1} value={threshold}
+                disabled={!hasHolding}
+                onChange={e => setThreshold(Number(e.target.value))}
+              />
+            </div>
+
+            {/* Status / result / error */}
+            {isGenerating && proofStatus && (
+              <div className="alert alert-violet">
+                <RefreshCw style={{ width: 18, height: 18, color: 'var(--violet-light)', flexShrink: 0, animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-2)', fontSize: '0.875rem' }}>{proofStatus}</span>
+              </div>
+            )}
+            {err && (
+              <div className="alert alert-rose">
+                <AlertCircle style={{ width: 18, height: 18, color: 'var(--rose)', flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 'var(--sp-1)' }}>Circuit Assertion Failed</p>
+                  <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', lineHeight: 1.6 }}>{err}</p>
+                  <p style={{ color: 'var(--text-4)', fontSize: '0.8125rem', marginTop: 'var(--sp-2)' }}>
+                    Constraint: ownership ≥ {threshold}% was not satisfied by your private witness.
+                  </p>
+                </div>
+              </div>
+            )}
+            {result && (
+              <div className="proof-result animate-fade-in">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                  <CheckCircle2 style={{ width: 22, height: 22, color: 'var(--green)', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: 'var(--text-1)' }}>Proof Generated &amp; Verified</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-3)', marginTop: 2 }}>Midnight Compact circuit passed</div>
+                  </div>
+                </div>
+                <div className="divider" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+                  {[
+                    ['Public Claim', result.publicClaim],
+                    ['ZK Circuit', result.zkirCircuit],
+                    ['Commitment', result.proofHash.slice(0, 28) + '…'],
+                    ['Ledger Update', '✓ Audit counter incremented'],
+                    ['Exact Ownership', '🔒 NOT DISCLOSED'],
+                  ].map(([k, v]) => (
+                    <div key={k} className="proof-row">
+                      <span style={{ color: 'var(--text-4)', fontSize: '0.875rem' }}>{k}</span>
+                      <span style={{
+                        color: k === 'ZK Circuit' || k === 'Commitment' ? 'var(--violet-light)' : k === 'Exact Ownership' ? 'var(--cyan)' : k === 'Ledger Update' ? 'var(--green)' : 'var(--text-1)',
+                        fontFamily: k === 'ZK Circuit' || k === 'Commitment' ? 'var(--font-mono)' : 'inherit',
+                        fontWeight: 500, textAlign: 'right', fontSize: '0.875rem',
+                      }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right sticky panel */}
+          <div style={{ position: 'sticky', top: 'calc(var(--nav-h) + var(--sp-6))' }} className="section-gap">
+
+            <div className="card card-cyan">
+              <p className="section-label" style={{ marginBottom: 'var(--sp-4)', color: 'var(--cyan)' }}>Your Shielded Holding</p>
+              <div className="private-field">
+                <div className="private-field-label">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Lock style={{ width: 11, height: 11, color: 'var(--cyan)' }} />
+                    Shares Owned
+                  </span>
+                  <span className="badge badge-cyan" style={{ fontSize: '0.5625rem' }}>Shielded</span>
+                </div>
+                <div className="private-field-value" style={{ color: 'var(--cyan)' }}>
+                  {holding ? `${Number(holding.ownershipShares).toLocaleString()} (${actualPct.toFixed(2)}%)` : 'No holding'}
+                </div>
+              </div>
+              <div className="private-field" style={{ marginTop: 'var(--sp-3)' }}>
+                <div className="private-field-label"><span>Claim Threshold</span></div>
+                <div className="private-field-value">{threshold}%</div>
+              </div>
+              <div className="private-field" style={{ marginTop: 'var(--sp-3)' }}>
+                <div className="private-field-label"><span>Will Pass?</span></div>
+                <div style={{ marginTop: 'var(--sp-2)' }}>
+                  {!hasHolding
+                    ? <span className="badge badge-amber">No Holding</span>
+                    : eligible
+                      ? <span className="badge badge-green"><span className="badge-dot" style={{ background: 'var(--green)' }} /> Will Pass</span>
+                      : <span className="badge badge-rose">Will Fail</span>
+                  }
+                </div>
               </div>
             </div>
 
-            <div className="p-3.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-xs text-indigo-300 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-              <span className="leading-relaxed">
-                <strong>Privacy Guarantee:</strong> The verifier learns that the claim is <strong>VALID</strong>. Your exact ownership percentage ({actualOwnershipPercentage.toFixed(2)}%) remains strictly private and was never disclosed.
-              </span>
+            {prop && (
+              <div className="card">
+                <p className="section-label" style={{ marginBottom: 'var(--sp-3)' }}>Selected Property</p>
+                <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-1)', marginBottom: 'var(--sp-1)' }}>{prop.name}</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--text-4)', marginBottom: 'var(--sp-4)' }}>{prop.location}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'var(--text-4)' }}>Total Shares</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-2)', fontWeight: 600 }}>{Number(prop.totalShares).toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+
+            <button type="submit" disabled={isGenerating || !hasHolding} className="btn btn-primary btn-full">
+              {isGenerating
+                ? <><RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> Evaluating Circuit…</>
+                : !hasHolding
+                  ? <><Lock style={{ width: 16, height: 16 }} /> Holdings Required</>
+                  : <><ShieldCheck style={{ width: 16, height: 16 }} /> Generate Ownership Proof</>
+              }
+            </button>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-4)', textAlign: 'center', lineHeight: 1.5 }}>
+              Your exact share count stays private. Only the threshold claim is disclosed.
+            </p>
+
+            <div className="alert alert-blue">
+              <Info style={{ width: 15, height: 15, color: 'var(--blue)', flexShrink: 0, marginTop: 2 }} />
+              <p style={{ color: 'var(--text-3)', fontSize: '0.8125rem', lineHeight: 1.6 }}>
+                The verifier learns your ownership is ≥ {threshold}%. Your actual {actualPct.toFixed(2)}% holding remains strictly private.
+              </p>
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      <style>{`
+        @media (max-width: 900px) {
+          form > .page-gap > div[style*="grid-template-columns: 1fr 360px"] {
+            grid-template-columns: 1fr !important;
+          }
+          form > .page-gap > div > div[style*="sticky"] { position: static !important; }
+        }
+      `}</style>
+    </form>
   );
 };

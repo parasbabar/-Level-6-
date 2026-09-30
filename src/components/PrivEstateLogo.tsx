@@ -1,121 +1,131 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface PrivEstateLogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  showWordmark?: boolean;
-  showSubtitle?: boolean;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+  showText?: boolean;
   className?: string;
+  showTagline?: boolean;
+  animate?: boolean;
 }
 
 export const PrivEstateLogo: React.FC<PrivEstateLogoProps> = ({
   size = 'md',
-  showWordmark = true,
-  showSubtitle = true,
+  showText = true,
+  showTagline = false,
+  animate = true,
   className = '',
 }) => {
-  const iconDimensions = {
-    sm: { box: 28, radius: 8, stroke: 1.5, markSize: 'text-base', subSize: 'text-[9px]' },
-    md: { box: 38, radius: 10, stroke: 1.8, markSize: 'text-lg', subSize: 'text-[10px]' },
-    lg: { box: 48, radius: 13, stroke: 2, markSize: 'text-2xl', subSize: 'text-xs' },
-    xl: { box: 64, radius: 16, stroke: 2.2, markSize: 'text-3xl', subSize: 'text-sm' },
-  }[size];
+  const reduced = useReducedMotion();
+  const shouldAnimate = animate && !reduced;
+
+  const dim =
+    typeof size === 'number' ? size
+    : size === 'xs' ? 22
+    : size === 'sm' ? 28
+    : size === 'lg' ? 42
+    : size === 'xl' ? 56
+    : 34;
+
+  const textSize =
+    typeof size === 'number' ? size * 0.47
+    : size === 'xs' ? 11
+    : size === 'sm' ? 13
+    : size === 'lg' ? 19
+    : size === 'xl' ? 24
+    : 15;
+
+  const taglineSize = Math.max(8, textSize * 0.58);
+  const uid = React.useId().replace(/:/g, '');
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
-      {/* Icon Mark */}
-      <div
-        className="relative flex-shrink-0 flex items-center justify-center transition-transform duration-300 hover:scale-105"
-        style={{ width: iconDimensions.box, height: iconDimensions.box }}
-      >
-        <svg
-          viewBox="0 0 64 64"
-          width={iconDimensions.box}
-          height={iconDimensions.box}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-lg"
-        >
+    <div className={`inline-flex items-center gap-2 select-none ${className}`} style={{ lineHeight: 1 }}>
+      <div className="relative flex-shrink-0" style={{ width: dim, height: dim }}>
+        {shouldAnimate ? (
+          <motion.div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(74,222,40,0.35) 0%, rgba(34,211,238,0.20) 50%, transparent 75%)', filter: 'blur(6px)', transform: 'scale(1.4)' }}
+            animate={{ opacity: [0.55, 0.9, 0.55], scale: [1.35, 1.55, 1.35] }}
+            transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut' }}
+          />
+        ) : (
+          <div className="absolute inset-0 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(74,222,40,0.28) 0%, transparent 70%)', filter: 'blur(5px)', transform: 'scale(1.4)' }} />
+        )}
+
+        <svg width={dim} height={dim} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PrivEstate logo" role="img" style={{ position: 'relative', zIndex: 1 }}>
           <defs>
-            <linearGradient id="logo-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0f172a" />
-              <stop offset="50%" stopColor="#1e1b4b" />
-              <stop offset="100%" stopColor="#064e3b" />
+            <linearGradient id={`gm-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#4ade28" />
+              <stop offset="48%" stopColor="#22D3EE" />
+              <stop offset="100%" stopColor="#8B5CF6" />
             </linearGradient>
-            <linearGradient id="logo-accent-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#818cf8" />
-              <stop offset="50%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#10b981" />
+            <linearGradient id={`gf-${uid}`} x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="#0f2a1a" />
+              <stop offset="100%" stopColor="#080d0f" />
             </linearGradient>
-            <linearGradient id="logo-glow-diamond" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#a7f3d0" />
+            <linearGradient id={`gc-${uid}`} x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="#4ade28" stopOpacity="0.9" />
+              <stop offset="60%" stopColor="#22D3EE" stopOpacity="0.75" />
+              <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.3" />
             </linearGradient>
+            <linearGradient id={`gk-${uid}`} x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="#22D3EE" />
+              <stop offset="100%" stopColor="#8B5CF6" />
+            </linearGradient>
+            <radialGradient id={`gi-${uid}`} cx="50%" cy="35%" r="50%">
+              <stop offset="0%" stopColor="#4ade28" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#4ade28" stopOpacity="0" />
+            </radialGradient>
+            <clipPath id={`cs-${uid}`}>
+              <path d="M24 3.5 L41 9.5 V22C41 33 34 40 24 44C14 40 7 33 7 22V9.5Z" />
+            </clipPath>
           </defs>
 
-          {/* Rounded Background Plate */}
-          <rect
-            width="64"
-            height="64"
-            rx="16"
-            fill="url(#logo-bg-grad)"
-            stroke="#334155"
-            strokeWidth="1.5"
-          />
+          {/* Shield fill */}
+          <path d="M24 3.5 L41 9.5 V22C41 33 34 40 24 44C14 40 7 33 7 22V9.5Z" fill={`url(#gf-${uid})`} />
+          <path d="M24 3.5 L41 9.5 V22C41 33 34 40 24 44C14 40 7 33 7 22V9.5Z" fill={`url(#gi-${uid})`} />
+          {/* Shield gradient border */}
+          <path d="M24 3.5 L41 9.5 V22C41 33 34 40 24 44C14 40 7 33 7 22V9.5Z" fill="none" stroke={`url(#gm-${uid})`} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
 
-          {/* Shield Outline */}
-          <path
-            d="M32 8L50 16V31C50 43.5 32 55 32 55C32 55 14 43.5 14 31V16L32 8Z"
-            stroke="url(#logo-accent-shield)"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-            fill="rgba(15, 23, 42, 0.65)"
-          />
+          {/* City skyline clipped inside shield */}
+          <g clipPath={`url(#cs-${uid})`} opacity="0.95">
+            <rect x="9"  y="28" width="4"   height="16" rx="0.4" fill={`url(#gc-${uid})`} opacity="0.5" />
+            <rect x="13" y="22" width="5"   height="22" rx="0.5" fill={`url(#gc-${uid})`} opacity="0.65" />
+            <rect x="14.5" y="24" width="2" height="2" rx="0.3" fill="#22D3EE" opacity="0.7" />
+            <rect x="14.5" y="28" width="2" height="2" rx="0.3" fill="#22D3EE" opacity="0.4" />
+            <rect x="18.5" y="16" width="5.5" height="28" rx="0.6" fill={`url(#gc-${uid})`} />
+            <rect x="21" y="12" width="1" height="5" rx="0.3" fill="#4ade28" opacity="0.9" />
+            <circle cx="21.5" cy="12" r="0.9" fill="#4ade28" />
+            <rect x="24.5" y="20" width="5"   height="24" rx="0.5" fill={`url(#gc-${uid})`} opacity="0.75" />
+            <rect x="25.5" y="22" width="2" height="2" rx="0.3" fill="#4ade28" opacity="0.6" />
+            <rect x="30" y="25" width="4.5" height="19" rx="0.4" fill={`url(#gc-${uid})`} opacity="0.55" />
+            <rect x="31" y="27" width="1.5" height="1.5" rx="0.3" fill="#22D3EE" opacity="0.5" />
+            <rect x="35" y="30" width="3.5" height="14" rx="0.4" fill={`url(#gc-${uid})`} opacity="0.4" />
+            <rect x="7" y="43" width="34" height="1.5" rx="0.5" fill="#4ade28" opacity="0.25" />
+          </g>
 
-          {/* Left Architectural Facet (P-Monogram Silhouette) */}
-          <path
-            d="M23 41V23L32 17.5V36L23 41Z"
-            fill="rgba(99, 102, 241, 0.28)"
-            stroke="#818cf8"
-            strokeWidth="1.75"
-            strokeLinejoin="round"
-          />
+          {/* ZK Keyhole */}
+          <circle cx="24" cy="24" r="5" fill="rgba(5,8,5,0.85)" stroke={`url(#gk-${uid})`} strokeWidth="1.5" />
+          <path d="M21.8 27.5 L22.5 33 H25.5 L26.2 27.5" fill={`url(#gk-${uid})`} strokeLinejoin="round" />
 
-          {/* Right Architectural Facet (E-Monogram Silhouette) */}
-          <path
-            d="M32 17.5L41 23V41L32 36V17.5Z"
-            fill="rgba(16, 185, 129, 0.28)"
-            stroke="#34d399"
-            strokeWidth="1.75"
-            strokeLinejoin="round"
-          />
-
-          {/* Architectural Horizontal Cantilevers */}
-          <path
-            d="M32 23.5H39M32 29H38M32 34.5H39"
-            stroke="#a7f3d0"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-
-          {/* ZK Core Diamond Key */}
-          <polygon
-            points="32,27 34.5,31 32,35 29.5,31"
-            fill="url(#logo-glow-diamond)"
-          />
+          {/* Corner accent dots */}
+          <circle cx="11" cy="13" r="1.1" fill="#22D3EE" opacity="0.8" />
+          <circle cx="37" cy="13" r="1.1" fill="#8B5CF6" opacity="0.8" />
+          <circle cx="24" cy="43" r="1"   fill="#4ade28" opacity="0.8" />
         </svg>
       </div>
 
-      {/* Wordmark */}
-      {showWordmark && (
-        <div className="flex flex-col justify-center">
-          <div className="flex items-center gap-1.5 leading-none">
-            <span className={`font-extrabold tracking-tight text-white ${iconDimensions.markSize}`}>
-              Priv<span className="text-emerald-400">Estate</span>
+      {showText && (
+        <div className="flex flex-col leading-none">
+          <span style={{ fontFamily: 'var(--font-display, "Inter", sans-serif)', fontSize: textSize, fontWeight: 800, letterSpacing: '-0.025em', color: '#ffffff', lineHeight: 1 }}>
+            Priv
+            <span style={{ background: 'linear-gradient(90deg, #4ade28 0%, #22D3EE 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              Estate
             </span>
-          </div>
-          {showSubtitle && (
-            <span className={`text-slate-400 font-medium tracking-wide mt-0.5 ${iconDimensions.subSize}`}>
-              Private ownership. Verifiable real estate.
+          </span>
+          {showTagline && (
+            <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: taglineSize, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#22D3EE', opacity: 0.75, marginTop: 2, lineHeight: 1 }}>
+              Shielded RWA · Midnight
             </span>
           )}
         </div>
@@ -123,3 +133,5 @@ export const PrivEstateLogo: React.FC<PrivEstateLogoProps> = ({
     </div>
   );
 };
+
+export default PrivEstateLogo;

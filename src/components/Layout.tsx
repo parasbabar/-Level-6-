@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  Building2,
-  Shield,
-  Lock,
-  FileCheck,
-  Award,
-  Sparkles,
-  ExternalLink,
-  Rocket,
-  Sliders,
-  Menu,
-  X,
-  CheckCircle2,
+  Building2, Shield, Lock, FileCheck, Award,
+  ExternalLink, Rocket, Sliders, Menu, X,
+  ChevronLeft, Copy, Check,
+  ChevronDown, LogOut,
 } from 'lucide-react';
 import { PrivEstateLogo } from './PrivEstateLogo';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { ScrollProgressBar } from './motion';
+import { spring, dur, ease } from '../lib/motion';
 import type { WalletConnectionStatus } from '../hooks/useMidnight';
 
-export type ActiveTab = 'deploy' | 'marketplace' | 'portfolio' | 'ownership' | 'compliance' | 'verifier' | 'admin';
+export type ActiveTab =
+  | 'deploy' | 'marketplace' | 'portfolio'
+  | 'ownership' | 'compliance' | 'verifier' | 'admin';
 
 interface LayoutProps {
   activeTab: ActiveTab;
@@ -25,247 +22,368 @@ interface LayoutProps {
   shieldedAddress: string | null;
   networkId: string;
   children: React.ReactNode;
+  onGoHome?: () => void;
 }
 
+const TABS: { id: ActiveTab; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
+  { id: 'marketplace', label: 'Marketplace', icon: Building2 },
+  { id: 'portfolio',   label: 'Portfolio',   icon: Lock      },
+  { id: 'ownership',   label: 'Ownership',   icon: Shield    },
+  { id: 'compliance',  label: 'Compliance',  icon: Award     },
+  { id: 'verifier',    label: 'Verifier',    icon: FileCheck },
+  { id: 'admin',       label: 'Admin',       icon: Sliders   },
+  { id: 'deploy',      label: 'Deploy',      icon: Rocket    },
+];
+
 export const Layout: React.FC<LayoutProps> = ({
-  activeTab,
-  onSelectTab,
-  walletStatus,
-  shieldedAddress,
-  networkId,
-  children,
+  activeTab, onSelectTab, walletStatus, shieldedAddress, networkId, children, onGoHome,
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [walletDropOpen, setWalletDropOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const walletDropRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
-  const navGroups = [
-    {
-      group: 'Core',
-      tabs: [
-        { id: 'marketplace' as ActiveTab, label: 'Marketplace', icon: Building2 },
-        { id: 'portfolio' as ActiveTab, label: 'Portfolio', icon: Lock },
-      ],
-    },
-    {
-      group: 'ZK Proofs',
-      tabs: [
-        { id: 'ownership' as ActiveTab, label: 'Ownership Proof', icon: Shield },
-        { id: 'compliance' as ActiveTab, label: 'Compliance', icon: Award },
-        { id: 'verifier' as ActiveTab, label: 'Verifier', icon: FileCheck },
-      ],
-    },
-    {
-      group: 'Manage',
-      tabs: [
-        { id: 'admin' as ActiveTab, label: 'Admin', icon: Sliders },
-        { id: 'deploy' as ActiveTab, label: 'Deploy', icon: Rocket },
-      ],
-    },
-  ];
+  const isConnected = walletStatus === 'connected' || walletStatus === 'syncing';
 
-  const handleTabClick = (tabId: ActiveTab) => {
-    onSelectTab(tabId);
-    setMobileMenuOpen(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 10);
+    fn();
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  useEffect(() => {
+    if (!walletDropOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (walletDropRef.current && !walletDropRef.current.contains(e.target as Node))
+        setWalletDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [walletDropOpen]);
+
+  const copyAddress = () => {
+    if (shieldedAddress) navigator.clipboard.writeText(shieldedAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleTab = (tab: ActiveTab) => { onSelectTab(tab); setMobileOpen(false); };
+
+  const addrShort = shieldedAddress
+    ? `${shieldedAddress.slice(0, 6)}…${shieldedAddress.slice(-4)}`
+    : null;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Top Banner: Privacy & Architecture Guarantee */}
-      <div className="bg-gradient-to-r from-indigo-950/90 via-slate-900 to-emerald-950/80 border-b border-indigo-500/20 py-2 px-4 text-center text-xs text-indigo-200 flex items-center justify-center gap-2 backdrop-blur-md">
-        <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-        <span>
-          <strong className="text-white">PrivEstate — Level 6 Supermoon Release</strong>
-          <span className="hidden sm:inline"> | Privacy-Preserving Fractional Real Estate on Midnight Preprod</span>
-        </span>
-        <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-          <CheckCircle2 className="w-3 h-3" /> ZK Compact Verified
-        </span>
-      </div>
+    <div className="app-shell">
+      <ScrollProgressBar />
 
-      {/* Main Header / Navigation */}
-      <header className="border-b border-slate-800/80 bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Custom Brand Logo & Wordmark */}
-          <div
-            className="cursor-pointer flex items-center gap-3 group"
-            onClick={() => handleTabClick('marketplace')}
-          >
-            <PrivEstateLogo size="md" showWordmark={true} showSubtitle={true} />
-            <span className="hidden xl:inline text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              Supermoon
-            </span>
-          </div>
+      {/* ── Fixed navbar ──────────────────────────────────────────────────── */}
+      <motion.header
+        className="app-navbar"
+        style={{
+          background: scrolled ? 'rgba(5,8,5,0.92)' : 'rgba(5,8,5,0.70)',
+          backdropFilter: scrolled ? 'blur(20px)' : 'blur(8px)',
+          WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'blur(8px)',
+          borderBottom: `1px solid ${scrolled ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.05)'}`,
+          transition: 'background 0.3s, border-color 0.3s, backdrop-filter 0.3s',
+        }}
+      >
+        <div className="pg-container app-navbar-inner">
 
-          {/* Grouped Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1.5 bg-slate-950/70 p-1.5 rounded-xl border border-slate-800/80">
-            {navGroups.map((g, gIdx) => (
-              <React.Fragment key={g.group}>
-                {gIdx > 0 && <div className="w-px h-4 bg-slate-800 mx-1" />}
-                <div className="flex items-center gap-1">
-                  {g.tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTabClick(tab.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition duration-150 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                        }`}
-                      >
-                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-200' : 'text-slate-400'}`} />
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </React.Fragment>
-            ))}
-          </nav>
-
-          {/* Quick Network & Wallet Status Indicator + Mobile Menu Toggle */}
-          <div className="flex items-center gap-2.5">
-            {shieldedAddress && (
-              <span className="hidden sm:inline text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                {shieldedAddress.slice(0, 6)}...{shieldedAddress.slice(-4)}
-              </span>
+          {/* Left */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
+            {onGoHome && (
+              <motion.button
+                onClick={onGoHome}
+                whileHover={reduced ? {} : { x: -2 }}
+                whileTap={reduced ? {} : { scale: 0.95 }}
+                transition={{ duration: dur.micro }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.25rem',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--r-pill)',
+                  padding: '5px 10px',
+                  color: 'var(--text-3)',
+                  fontSize: '0.8125rem',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                }}
+                aria-label="Home"
+              >
+                <ChevronLeft style={{ width: 13, height: 13 }} />
+                Home
+              </motion.button>
             )}
 
-            <div className="flex items-center gap-1.5 text-xs font-mono px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-slate-300">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  walletStatus === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-                }`}
+            <button
+              onClick={onGoHome}
+              style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              aria-label="PrivEstate home"
+            >
+              <PrivEstateLogo size="md" showText={true} animate={!reduced} />
+            </button>
+          </div>
+
+          {/* Center: tabs with sliding layoutId pill */}
+          <nav
+            style={{ display: 'flex', alignItems: 'center', gap: '2px', overflow: 'hidden' }}
+            className="desktop-nav"
+            role="navigation"
+            aria-label="App tabs"
+          >
+            {TABS.map(t => {
+              const Icon = t.icon;
+              const active = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => handleTab(t.id)}
+                  aria-current={active ? 'page' : undefined}
+                  style={{
+                    position: 'relative',
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
+                    padding: '6px 12px', height: 34,
+                    borderRadius: 'var(--r-pill)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '0.875rem', fontWeight: active ? 600 : 400,
+                    color: active ? '#fff' : 'var(--text-3)',
+                    fontFamily: 'var(--font-body)',
+                    transition: 'color 0.18s',
+                    whiteSpace: 'nowrap',
+                    zIndex: 1,
+                  }}
+                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.color = 'var(--text-3)'; }}
+                >
+                  {/* Sliding active pill */}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-pill"
+                      style={{
+                        position: 'absolute', inset: 0,
+                        borderRadius: 'var(--r-pill)',
+                        background: 'var(--green-dim)',
+                        border: '1px solid var(--green-border)',
+                        zIndex: -1,
+                      }}
+                      transition={spring.pill}
+                    />
+                  )}
+                  <motion.span
+                    animate={reduced ? {} : active ? { color: 'var(--green)' } : {}}
+                    transition={{ duration: dur.fast }}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                  >
+                    <Icon style={{ width: 13, height: 13 }} />
+                  </motion.span>
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Right */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
+            {/* Network badge with pulse */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.375rem',
+              padding: '4px 10px',
+              background: 'var(--bg-raised)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--r-pill)',
+              fontSize: '0.75rem',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--text-4)',
+            }}>
+              <motion.span
+                style={{ width: 7, height: 7, borderRadius: '50%', background: isConnected ? 'var(--green)' : 'var(--amber)', display: 'block', flexShrink: 0 }}
+                animate={reduced ? {} : isConnected ? { boxShadow: ['0 0 0px rgba(124,255,58,0)', '0 0 8px rgba(124,255,58,0.8)', '0 0 0px rgba(124,255,58,0)'] } : {}}
+                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
               />
-              <span className="text-[11px] font-medium">{networkId}</span>
+              {networkId}
             </div>
 
-            {/* Mobile Hamburger Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 transition"
-              aria-label="Toggle navigation menu"
+            {/* Wallet chip */}
+            {isConnected && addrShort ? (
+              <div ref={walletDropRef} style={{ position: 'relative' }}>
+                <motion.button
+                  onClick={() => setWalletDropOpen(v => !v)}
+                  whileHover={reduced ? {} : { boxShadow: '0 0 12px rgba(124,255,58,0.2)' }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
+                    padding: '5px 12px',
+                    background: 'var(--green-dim)',
+                    border: '1px solid var(--green-border)',
+                    borderRadius: 'var(--r-pill)',
+                    fontSize: '0.8125rem',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--green)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', flexShrink: 0 }} />
+                  {addrShort}
+                  <motion.span animate={{ rotate: walletDropOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown style={{ width: 12, height: 12 }} />
+                  </motion.span>
+                </motion.button>
+
+                <AnimatePresence>
+                  {walletDropOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease }}
+                      style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                        width: 200,
+                        background: 'rgba(10,16,10,0.98)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: 'var(--r-lg)',
+                        padding: '0.5rem',
+                        backdropFilter: 'blur(16px)',
+                        zIndex: 200,
+                      }}
+                    >
+                      <button
+                        onClick={copyAddress}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.625rem 0.875rem', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-2)', fontFamily: 'var(--font-body)', transition: 'background 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                      >
+                        {copied ? <Check style={{ width: 14, height: 14, color: 'var(--green)' }} /> : <Copy style={{ width: 14, height: 14 }} />}
+                        {copied ? 'Copied!' : 'Copy address'}
+                      </button>
+                      <button
+                        onClick={() => { setWalletDropOpen(false); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.625rem 0.875rem', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--rose)', fontFamily: 'var(--font-body)', transition: 'background 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--rose-dim)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                      >
+                        <LogOut style={{ width: 14, height: 14 }} /> Disconnect
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.button
+                whileTap={reduced ? {} : { scale: 0.96 }}
+                transition={{ duration: dur.micro }}
+                style={{
+                  padding: '5px 14px', borderRadius: 'var(--r-pill)',
+                  background: 'linear-gradient(180deg,#8CFF4A 0%,#2E7D0B 100%)',
+                  border: 'none', color: '#020802',
+                  fontSize: '0.875rem', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'var(--font-body)',
+                }}
+              >
+                Connect
+              </motion.button>
+            )}
+
+            {/* Mobile hamburger */}
+            <motion.button
+              onClick={() => setMobileOpen(v => !v)}
+              whileTap={reduced ? {} : { scale: 0.94 }}
+              style={{
+                display: 'none', padding: '0.4rem',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--r-sm)',
+                color: '#fff', cursor: 'pointer',
+              }}
+              className="mobile-menu-toggle"
+              aria-label="Toggle menu"
+              aria-expanded={mobileOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span key={mobileOpen ? 'x' : 'm'} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.14 }} style={{ display: 'flex' }}>
+                  {mobileOpen ? <X style={{ width: 17, height: 17 }} /> : <Menu style={{ width: 17, height: 17 }} />}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer / Dropdown */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-800 bg-slate-900/95 backdrop-blur-md px-4 py-3 space-y-3 animate-fade-in shadow-2xl">
-            {navGroups.map((g) => (
-              <div key={g.group} className="space-y-1">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 px-2">
-                  {g.group}
-                </div>
-                {g.tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease }}
+              style={{ overflow: 'hidden', borderTop: '1px solid var(--border)', background: 'rgba(5,8,5,0.97)', backdropFilter: 'blur(20px)' }}
+            >
+              <div style={{ padding: '0.875rem var(--sp-4) 1.25rem', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {TABS.map((t, i) => {
+                  const Icon = t.icon;
+                  const active = activeTab === t.id;
                   return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabClick(tab.id)}
-                      className={`w-full px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between transition ${
-                        isActive
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'text-slate-300 hover:bg-slate-800/80 bg-slate-950/40 border border-slate-800/60'
-                      }`}
+                    <motion.button
+                      key={t.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      onClick={() => handleTab(t.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                        padding: '0.75rem 0.875rem', borderRadius: 'var(--r-md)',
+                        background: active ? 'var(--green-dim)' : 'none',
+                        border: `1px solid ${active ? 'var(--green-border)' : 'transparent'}`,
+                        color: active ? 'var(--green)' : 'var(--text-3)',
+                        fontSize: '0.9375rem', fontWeight: active ? 600 : 400,
+                        cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
+                      }}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4" />
-                        <span>{tab.label}</span>
-                      </div>
-                      {isActive && (
-                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-700">
-                          Active
-                        </span>
-                      )}
-                    </button>
+                      <Icon style={{ width: 15, height: 15 }} />
+                      {t.label}
+                    </motion.button>
                   );
                 })}
               </div>
-            ))}
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
-        {/* Horizontal scroll tabs for medium screens when menu is closed */}
-        <div className="hidden md:flex lg:hidden overflow-x-auto border-t border-slate-800/80 px-4 py-2 gap-1.5 no-scrollbar bg-slate-950/40">
-          {navGroups.flatMap((g) => g.tabs).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabClick(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 bg-slate-900 border border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+      {/* Main */}
+      <main className="app-main" role="main">
+        <div className="pg-container">
+          {children}
         </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {children}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/90 py-10 text-slate-500 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-            <PrivEstateLogo size="sm" showWordmark={true} showSubtitle={false} />
-            <div>
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-300 font-semibold">
-                <span>PrivEstate — Midnight Level 6 Supermoon Submission</span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1 max-w-xl leading-relaxed">
-                Institutional-grade Real-World Asset (RWA) fractionalization powered by Midnight Network Preprod. Zero-Knowledge proofs protect confidential ownership, compliance, and rental yield.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
-            <a
-              href="https://docs.midnight.network"
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-400 hover:text-indigo-400 transition flex items-center gap-1"
-            >
-              <span>Midnight Docs</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-            <span className="text-slate-700">•</span>
-            <a
-              href="https://explorer.preprod.midnight.network"
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-400 hover:text-emerald-400 transition flex items-center gap-1"
-            >
-              <span>Preprod Explorer</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-            <span className="text-slate-700">•</span>
-            <a
-              href="https://github.com/parasbabar/-Level-6-.git"
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-400 hover:text-indigo-400 transition flex items-center gap-1"
-            >
-              <span>GitHub Repository</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: 'var(--sp-5) 0', marginTop: 'var(--sp-8)' }}>
+        <div className="pg-container" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--text-4)' }}>PrivEstate · Midnight Preprod · Level 6 Supermoon</span>
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
+            {[
+              { label: 'Midnight Docs', href: 'https://docs.midnight.network' },
+              { label: 'Explorer', href: 'https://explorer.preprod.midnight.network' },
+            ].map(({ label, href }) => (
+              <a key={href} href={href} target="_blank" rel="noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', color: 'var(--text-4)', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--green)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-4)'; }}
+              >
+                {label} <ExternalLink style={{ width: 10, height: 10 }} />
+              </a>
+            ))}
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @media (max-width: 1024px) { .desktop-nav { display: none !important; } .mobile-menu-toggle { display: flex !important; } }
+      `}</style>
     </div>
   );
 };

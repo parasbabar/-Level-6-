@@ -1,191 +1,193 @@
-import React from 'react';
-import { CheckCircle2, Shield, Lock, FileCheck, Hash, Clock, Copy, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  CheckCircle2, Shield, Lock, FileCheck,
+  Hash, Clock, Copy, Check, Filter,
+} from 'lucide-react';
 import type { VerificationResult } from '../utils/contract';
 
 interface ProofVerifierProps {
   verificationHistory: VerificationResult[];
 }
 
-export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistory }) => {
-  const [filterType, setFilterType] = React.useState<'ALL' | 'OWNERSHIP_THRESHOLD' | 'COMPLIANCE_MINIMUM' | 'RENTAL_YIELD'>('ALL');
-  const [copiedHash, setCopiedHash] = React.useState<string | null>(null);
+const CLAIM_TYPE_LABELS: Record<string, string> = {
+  OWNERSHIP_THRESHOLD: 'Ownership',
+  COMPLIANCE_MINIMUM:  'Compliance',
+  RENTAL_YIELD:        'Rental Yield',
+};
+const CLAIM_TYPE_BADGES: Record<string, string> = {
+  OWNERSHIP_THRESHOLD: 'badge-violet',
+  COMPLIANCE_MINIMUM:  'badge-green',
+  RENTAL_YIELD:        'badge-cyan',
+};
 
-  const filteredHistory = verificationHistory.filter(
-    (item) => filterType === 'ALL' || item.claimType === filterType
+export const ProofVerifier: React.FC<ProofVerifierProps> = ({ verificationHistory }) => {
+  const [filter, setFilter] = useState<'ALL' | 'OWNERSHIP_THRESHOLD' | 'COMPLIANCE_MINIMUM' | 'RENTAL_YIELD'>('ALL');
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const filtered = verificationHistory.filter(
+    i => filter === 'ALL' || i.claimType === filter
   );
 
-  const handleCopyHash = (hash: string) => {
-    navigator.clipboard.writeText(hash);
-    setCopiedHash(hash);
+  const copyHash = (h: string) => {
+    navigator.clipboard.writeText(h);
+    setCopiedHash(h);
     setTimeout(() => setCopiedHash(null), 2000);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="page-gap">
+
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <FileCheck className="w-7 h-7" />
+      <div className="page-header">
+        <div className="page-header-left">
+          <div className="page-icon page-icon-violet">
+            <FileCheck style={{ width: 26, height: 26, color: 'var(--violet-light)' }} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Auditor & Regulator Proof Verifier</h2>
-            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
-              Verify cryptographic claims directly against Midnight Compact circuits without gaining access to sensitive investor identities or raw balances.
+            <h1 className="page-title">Proof Verifier</h1>
+            <p className="page-subtitle">
+              Auditor portal — verify cryptographic proof claims without accessing sensitive investor data.
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="px-3 py-1.5 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>ZK Verification Active</span>
-          </span>
-        </div>
+        <span className="badge badge-green">
+          <span className="badge-dot" style={{ background: 'var(--green)' }} />
+          ZK Verification Active
+        </span>
       </div>
 
-      {/* Filter Tabs */}
-      {verificationHistory.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold no-scrollbar">
-          <span className="text-slate-400 mr-1">Filter Claims:</span>
-          {[
-            { id: 'ALL', label: `All Proofs (${verificationHistory.length})` },
-            { id: 'OWNERSHIP_THRESHOLD', label: 'Ownership Claims' },
-            { id: 'COMPLIANCE_MINIMUM', label: 'Compliance Claims' },
-            { id: 'RENTAL_YIELD', label: 'Rental Yield Claims' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilterType(tab.id as any)}
-              className={`px-3.5 py-1.5 rounded-xl border transition whitespace-nowrap ${
-                filterType === tab.id
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* Filter bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', color: 'var(--text-4)', fontSize: '0.875rem' }}>
+          <Filter style={{ width: 14, height: 14 }} />
+          Filter:
         </div>
-      )}
+        {([
+          { id: 'ALL', label: `All (${verificationHistory.length})` },
+          { id: 'OWNERSHIP_THRESHOLD', label: 'Ownership' },
+          { id: 'COMPLIANCE_MINIMUM',  label: 'Compliance' },
+          { id: 'RENTAL_YIELD',        label: 'Rental Yield' },
+        ] as const).map(opt => (
+          <button
+            key={opt.id}
+            onClick={() => setFilter(opt.id)}
+            className={`filter-pill ${filter === opt.id ? 'active' : ''}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
-      {/* History / Audit Log */}
-      {filteredHistory.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400 space-y-3 shadow-lg">
-          <Shield className="w-12 h-12 mx-auto text-slate-600 stroke-[1.5]" />
-          <h3 className="text-base font-semibold text-slate-200">No Verifications Found</h3>
-          <p className="text-xs max-w-md mx-auto text-slate-400">
-            {verificationHistory.length === 0
-              ? 'Generate an ownership proof or compliance proof from the marketplace or portfolio tab to see live auditor verification logs here.'
-              : 'No verified proof records match the selected claim filter.'}
-          </p>
+      {/* Empty state */}
+      {filtered.length === 0 ? (
+        <div className="card">
+          <div className="empty-state">
+            <Shield style={{ width: 52, height: 52, color: 'var(--text-5)' }} />
+            <div>
+              <p style={{ fontWeight: 600, fontSize: '1.0625rem', color: 'var(--text-1)', marginBottom: 'var(--sp-2)' }}>No Verifications Found</p>
+              <p style={{ color: 'var(--text-4)', fontSize: '0.9375rem', maxWidth: '36rem', lineHeight: 1.6 }}>
+                {verificationHistory.length === 0
+                  ? 'Generate an ownership, compliance, or rental yield proof from the Portfolio or Proof pages to see verification logs here.'
+                  : 'No records match the selected filter.'
+                }
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
-            Verified Audit Logs ({filteredHistory.length})
-          </h3>
+        <div className="section-gap">
+          {filtered.map((item, idx) => (
+            <div key={idx} className="card animate-fade-in">
 
-          {filteredHistory.map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5 hover:border-slate-700 transition"
-            >
-              {/* Status Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
-                <div className="space-y-1">
-                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono uppercase bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                    {item.claimType}
+              {/* Header row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--sp-4)', marginBottom: 'var(--sp-5)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+                  <span className={`badge ${CLAIM_TYPE_BADGES[item.claimType] || 'badge-muted'}`}>
+                    {CLAIM_TYPE_LABELS[item.claimType] || item.claimType}
                   </span>
-                  <h4 className="text-base font-bold text-white mt-1">{item.publicClaim}</h4>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1875rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.015em' }}>
+                    {item.publicClaim}
+                  </h3>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>STATUS: VALID</span>
-                  </span>
-                </div>
+                <span className="badge badge-green" style={{ fontSize: '0.6875rem' }}>
+                  <CheckCircle2 style={{ width: 11, height: 11 }} />
+                  STATUS: VALID
+                </span>
               </div>
 
-              {/* Comparison Grid: Public vs Private Data */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Left: Public Claims */}
-                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2.5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                      Publicly Disclosed Audit Data
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-mono">VERIFIABLE</span>
+              <div className="divider" style={{ marginBottom: 'var(--sp-5)' }} />
+
+              {/* Two-column: public vs private */}
+              <div className="grid-2" style={{ gap: 'var(--sp-4)' }}>
+                {/* Public */}
+                <div className="card-raised" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--sp-5)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-4)', paddingBottom: 'var(--sp-3)', borderBottom: '1px solid var(--border)' }}>
+                    <span className="section-label">Disclosed (Public)</span>
+                    <span className="badge badge-green" style={{ fontSize: '0.5625rem' }}>Verifiable</span>
                   </div>
-
-                  {Object.entries(item.disclosedData).map(([key, val]) => (
-                    <div key={key} className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400">{key}:</span>
-                      <span className="font-semibold text-white font-mono">{val}</span>
-                    </div>
-                  ))}
-
-                  <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-800/60">
-                    <span className="text-slate-400">Timestamp:</span>
-                    <span className="text-[11px] text-slate-300 font-mono flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-500" />
-                      {new Date(item.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Right: Protected Fields */}
-                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-2.5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Protected Private Fields</span>
-                    </span>
-                    <span className="text-[10px] text-indigo-300 font-mono">SHIELDED</span>
-                  </div>
-
-                  <ul className="space-y-2 text-xs">
-                    {item.undisclosedPrivateFields.map((field, fIdx) => (
-                      <li key={fIdx} className="flex items-center justify-between text-slate-300">
-                        <span className="text-slate-400">{field.split('(')[0].trim()}:</span>
-                        <span className="font-bold font-mono text-[10px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                          🔒 PRIVATE
-                        </span>
-                      </li>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+                    {Object.entries(item.disclosedData).map(([k, v]) => (
+                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--sp-3)', fontSize: '0.875rem', flexWrap: 'wrap' }}>
+                        <span style={{ color: 'var(--text-4)' }}>{k}</span>
+                        <span style={{ color: 'var(--text-1)', fontWeight: 600, textAlign: 'right' }}>{String(v)}</span>
+                      </div>
                     ))}
-                    <li className="flex items-center justify-between text-slate-300">
-                      <span className="text-slate-400">Rental Income Details:</span>
-                      <span className="font-bold font-mono text-[10px] text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                        🔒 NOT DISCLOSED
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--sp-3)', fontSize: '0.875rem', paddingTop: 'var(--sp-3)', borderTop: '1px solid var(--border)' }}>
+                      <span style={{ color: 'var(--text-4)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Clock style={{ width: 12, height: 12 }} /> Timestamp
                       </span>
-                    </li>
-                  </ul>
+                      <span style={{ color: 'var(--text-2)', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
+                        {new Date(item.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Private */}
+                <div className="card-raised card-cyan" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--sp-5)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-4)', paddingBottom: 'var(--sp-3)', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
+                      <Lock style={{ width: 13, height: 13, color: 'var(--cyan)' }} />
+                      <span className="section-label">Protected Fields</span>
+                    </span>
+                    <span className="badge badge-cyan" style={{ fontSize: '0.5625rem' }}>Shielded</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+                    {item.undisclosedPrivateFields.map((field, fi) => (
+                      <div key={fi} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--sp-3)', fontSize: '0.875rem' }}>
+                        <span style={{ color: 'var(--text-3)' }}>{field.split('(')[0].trim()}</span>
+                        <span className="badge badge-cyan" style={{ fontSize: '0.5625rem' }}>🔒 Private</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Cryptographic Proof Verification Footer */}
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-                <div className="flex items-center gap-2 text-slate-400 truncate flex-1 min-w-0">
-                  <Hash className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                  <span className="shrink-0">ZK Commitment:</span>
-                  <span className="text-slate-200 truncate select-all">{item.proofHash}</span>
+              {/* Cryptographic footer */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: 'var(--sp-4) var(--sp-5)',
+                marginTop: 'var(--sp-4)',
+                background: 'var(--bg-raised)',
+                borderRadius: 'var(--r-md)',
+                gap: 'var(--sp-4)', flexWrap: 'wrap',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', minWidth: 0, flex: 1 }}>
+                  <Hash style={{ width: 14, height: 14, color: 'var(--violet-light)', flexShrink: 0 }} />
+                  <span style={{ color: 'var(--text-4)', fontSize: '0.8125rem', flexShrink: 0 }}>ZK Commitment:</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.proofHash}
+                  </span>
                   <button
-                    onClick={() => handleCopyHash(item.proofHash)}
-                    className="p-1 text-slate-400 hover:text-white shrink-0"
-                    title="Copy hash"
+                    onClick={() => copyHash(item.proofHash)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedHash === item.proofHash ? 'var(--green)' : 'var(--text-4)', flexShrink: 0, display: 'flex' }}
                   >
-                    {copiedHash === item.proofHash ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
+                    {copiedHash === item.proofHash ? <Check style={{ width: 13, height: 13 }} /> : <Copy style={{ width: 13, height: 13 }} />}
                   </button>
                 </div>
-                <div className="text-emerald-400 text-[11px] shrink-0 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Cryptographically Verified on Midnight</span>
-                </div>
+                <span className="badge badge-green" style={{ fontSize: '0.5625rem', flexShrink: 0 }}>
+                  <CheckCircle2 style={{ width: 10, height: 10 }} /> Cryptographically Verified
+                </span>
               </div>
             </div>
           ))}

@@ -1,73 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64" fill="none">
-  <defs>
-    <linearGradient id="logo-shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#1e1b4b" />
-      <stop offset="100%" stop-color="#064e3b" />
-    </linearGradient>
-    <linearGradient id="logo-accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#818cf8" />
-      <stop offset="50%" stop-color="#6366f1" />
-      <stop offset="100%" stop-color="#10b981" />
-    </linearGradient>
-    <linearGradient id="logo-text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#10b981" />
-    </linearGradient>
-  </defs>
-
-  <!-- Logo Mark Container -->
-  <g transform="translate(6, 6)">
-    <rect width="52" height="52" rx="14" fill="url(#logo-shield-grad)" stroke="#334155" stroke-width="1.5" />
+<svg width="180" height="48" viewBox="0 0 180 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Architectural Geometry Mark -->
+  <g id="mark">
+    <!-- Base structure - fractional division -->
+    <path d="M8 40V16L24 8L40 16V40H8Z" stroke="#D6B36A" stroke-width="1.5" fill="none"/>
+    <path d="M24 8V40" stroke="#D6B36A" stroke-width="1.5"/>
+    <line x1="8" y1="28" x2="40" y2="28" stroke="#D6B36A" stroke-width="1.5"/>
+    <line x1="16" y1="22" x2="32" y2="22" stroke="#D6B36A" stroke-width="1"/>
+    <line x1="16" y1="34" x2="32" y2="34" stroke="#D6B36A" stroke-width="1"/>
     
-    <!-- Shield Outline -->
-    <path
-      d="M26 8L41 14.5V26.5C41 36.5 26 45.5 26 45.5C26 45.5 11 36.5 11 26.5V14.5L26 8Z"
-      stroke="url(#logo-accent-grad)"
-      stroke-width="2"
-      stroke-linejoin="round"
-      fill="rgba(15, 23, 42, 0.6)"
-    />
-
-    <!-- Left Building Facet (P-Monogram) -->
-    <path
-      d="M18.5 34V20L26 15.5V30L18.5 34Z"
-      fill="rgba(99, 102, 241, 0.3)"
-      stroke="#818cf8"
-      stroke-width="1.5"
-      stroke-linejoin="round"
-    />
-
-    <!-- Right Building Facet (E-Monogram) -->
-    <path
-      d="M26 15.5L33.5 20V34L26 30V15.5Z"
-      fill="rgba(16, 185, 129, 0.3)"
-      stroke="#34d399"
-      stroke-width="1.5"
-      stroke-linejoin="round"
-    />
-
-    <!-- E Facet Details -->
-    <path
-      d="M26 21H32M26 25H31M26 29H32"
-      stroke="#a7f3d0"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-
-    <!-- Central Diamond Node -->
-    <polygon points="26,23 28,26 26,29 24,26" fill="#34d399" />
+    <!-- Privacy shield element -->
+    <circle cx="24" cy="20" r="5" stroke="#38B7A8" stroke-width="1.2" fill="none"/>
+    <path d="M24 17L26 19L24 21L22 19L24 17Z" fill="#38B7A8"/>
   </g>
-
+  
   <!-- Wordmark -->
-  <g transform="translate(68, 40)">
-    <text font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="24" font-weight="800" fill="#ffffff" letter-spacing="-0.5">
-      Priv<tspan fill="url(#logo-text-grad)">Estate</tspan>
-    </text>
-  </g>
-  <g transform="translate(69, 53)">
-    <text font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#94a3b8" letter-spacing="1.2">
-      ZERO-KNOWLEDGE RWA
-    </text>
+  <g id="wordmark" fill="#F7F7F4">
+    <text x="54" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600" letter-spacing="-0.5">PrivEstate</text>
+    <text x="54" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="400" letter-spacing="1.5" fill="#94a3b8">PRIVATE OWNERSHIP</text>
   </g>
 </svg>

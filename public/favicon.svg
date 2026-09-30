@@ -1,63 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <defs>
-    <linearGradient id="pe-grad-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#1e1b4b" />
-      <stop offset="100%" stop-color="#064e3b" />
-    </linearGradient>
-    <linearGradient id="pe-grad-accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#818cf8" />
-      <stop offset="50%" stop-color="#6366f1" />
-      <stop offset="100%" stop-color="#10b981" />
-    </linearGradient>
-    <linearGradient id="pe-grad-glow" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#a7f3d0" />
-    </linearGradient>
-  </defs>
-
-  <!-- Background Base with Rounded Bevel -->
-  <rect width="64" height="64" rx="16" fill="url(#pe-grad-shield)" stroke="#334155" stroke-width="1.5" />
-
-  <!-- Shield & Architectural Geometric Silhouette -->
-  <!-- Outer Shield Path -->
-  <path
-    d="M32 8L50 16V31C50 43.5 32 55 32 55C32 55 14 43.5 14 31V16L32 8Z"
-    stroke="url(#pe-grad-accent)"
-    stroke-width="2.5"
-    stroke-linejoin="round"
-    fill="rgba(15, 23, 42, 0.6)"
-  />
-
-  <!-- Isometric Building Tower (P facet on Left) -->
-  <path
-    d="M23 41V23L32 17.5V36L23 41Z"
-    fill="rgba(99, 102, 241, 0.25)"
-    stroke="#818cf8"
-    stroke-width="1.75"
-    stroke-linejoin="round"
-  />
-
-  <!-- Isometric Building Tower (E facet on Right) -->
-  <path
-    d="M32 17.5L41 23V41L32 36V17.5Z"
-    fill="rgba(16, 185, 129, 0.25)"
-    stroke="#34d399"
-    stroke-width="1.75"
-    stroke-linejoin="round"
-  />
-
-  <!-- Horizontal Architectural Balconies / E Bars -->
-  <path
-    d="M32 24H39M32 29.5H38M32 35H39"
-    stroke="#a7f3d0"
-    stroke-width="1.75"
-    stroke-linecap="round"
-  />
-
-  <!-- Central ZK Cryptographic Keypoint / Diamond -->
-  <polygon
-    points="32,27 34.5,31 32,35 29.5,31"
-    fill="url(#pe-grad-glow)"
-  />
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon-only variant -->
+  <rect width="32" height="32" fill="#090A0C"/>
+  
+  <!-- Architectural structure -->
+  <path d="M6 26V12L16 6L26 12V26H6Z" stroke="#D6B36A" stroke-width="1.5" fill="none"/>
+  <path d="M16 6V26" stroke="#D6B36A" stroke-width="1.5"/>
+  <line x1="6" y1="19" x2="26" y2="19" stroke="#D6B36A" stroke-width="1.5"/>
+  
+  <!-- Privacy indicator -->
+  <circle cx="16" cy="14" r="3.5" stroke="#38B7A8" stroke-width="1.2" fill="none"/>
+  <path d="M16 12L17.5 13.5L16 15L14.5 13.5L16 12Z" fill="#38B7A8"/>
 </svg>

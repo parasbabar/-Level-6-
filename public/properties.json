@@ -1,5 +1,29 @@
 [
   {
+    "id": "PROP-006",
+    "bytesId": [
+      80,
+      82,
+      79,
+      80,
+      45,
+      48,
+      48,
+      54
+    ],
+    "name": "Hyatt Regency Pune & Residences",
+    "location": "pune maharashtra",
+    "assetType": "Residential Multifamily",
+    "totalValuationUsd": 45000,
+    "totalShares": "9000",
+    "complianceMinimumUsd": "20000",
+    "projectedYieldApy": "8.2%",
+    "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+    "status": "Preprod Verified",
+    "acquiredShares": "0",
+    "availableShares": "9000"
+  },
+  {
     "id": "PROP-005",
     "bytesId": [
       5,

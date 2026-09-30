@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Lock,
-  Eye,
-  EyeOff,
-  Shield,
-  Edit3,
-  Check,
-  Sparkles,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Building2,
-  PieChart,
-  DollarSign,
-  TrendingUp,
+  Lock, Eye, EyeOff, Shield, Edit3, Check, Clock,
+  CheckCircle2, AlertCircle, Building2, PieChart,
+  DollarSign, TrendingUp, RefreshCw,
 } from 'lucide-react';
 import type { PropertyMetadata, InvestorPrivateHolding } from '../utils/contract';
 import type { MidnightTransactionRecord } from '../hooks/useMidnight';
@@ -29,322 +18,259 @@ interface PortfolioProps {
 }
 
 export const Portfolio: React.FC<PortfolioProps> = ({
-  properties,
-  portfolio,
-  transactionHistory = [],
-  isRestoringState = false,
-  restorationError = null,
-  onUpdateHolding,
-  onSelectPropertyForProof,
+  properties, portfolio, transactionHistory = [],
+  isRestoringState = false, restorationError = null,
+  onUpdateHolding, onSelectPropertyForProof,
 }) => {
-  const [showSensitiveData, setShowSensitiveData] = useState<boolean>(true);
-  const [editingPropId, setEditingPropId] = useState<string | null>(null);
-  const [editShares, setEditShares] = useState<string>('');
-  const [editInvestment, setEditInvestment] = useState<string>('');
-  const [editRental, setEditRental] = useState<string>('');
+  const [masked, setMasked] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editShares, setEditShares] = useState('');
+  const [editInv, setEditInv] = useState('');
+  const [editRent, setEditRent] = useState('');
 
-  const startEdit = (holding: InvestorPrivateHolding) => {
-    setEditingPropId(holding.propertyId);
-    setEditShares(holding.ownershipShares.toString());
-    setEditInvestment(holding.investmentAmountUsd.toString());
-    setEditRental(holding.annualRentalIncomeUsd.toString());
+  const holdings = properties.filter(p => portfolio[p.id] && portfolio[p.id].ownershipShares > 0n);
+
+  const totalCapital = holdings.reduce((s, p) => s + (portfolio[p.id]?.investmentAmountUsd ?? 0n), 0n);
+  const totalShares  = holdings.reduce((s, p) => s + (portfolio[p.id]?.ownershipShares   ?? 0n), 0n);
+  const totalRental  = holdings.reduce((s, p) => s + (portfolio[p.id]?.annualRentalIncomeUsd ?? 0n), 0n);
+
+  const fmt = (n: bigint, prefix = '$') =>
+    masked ? '••••••••' : `${prefix}${Number(n).toLocaleString()}`;
+
+  const startEdit = (h: InvestorPrivateHolding) => {
+    setEditId(h.propertyId);
+    setEditShares(h.ownershipShares.toString());
+    setEditInv(h.investmentAmountUsd.toString());
+    setEditRent(h.annualRentalIncomeUsd.toString());
   };
-
-  const saveEdit = (propId: string) => {
-    onUpdateHolding(propId, {
+  const saveEdit = (id: string) => {
+    onUpdateHolding(id, {
       ownershipShares: BigInt(editShares || '0'),
-      investmentAmountUsd: BigInt(editInvestment || '0'),
-      annualRentalIncomeUsd: BigInt(editRental || '0'),
+      investmentAmountUsd: BigInt(editInv || '0'),
+      annualRentalIncomeUsd: BigInt(editRent || '0'),
     });
-    setEditingPropId(null);
+    setEditId(null);
   };
-
-  const propertiesWithHoldings = properties.filter(
-    (prop) => portfolio[prop.id] && portfolio[prop.id].ownershipShares > 0n
-  );
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      {/* State Restoration Banner */}
+    <div className="page-gap">
+
+      {/* Restoring banner */}
       {isRestoringState && (
-        <div className="bg-indigo-950/60 border border-indigo-500/40 rounded-2xl p-5 flex items-center gap-3.5 text-indigo-200 animate-pulse shadow-xl">
-          <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
-          <div className="text-xs">
-            <strong className="text-white">Restoring your private portfolio from Midnight network...</strong>
-            <span className="block text-indigo-300/80 mt-0.5">
-              Reconstructing client-side witness state and verifying on-chain ledger records for your wallet.
-            </span>
+        <div className="alert alert-cyan animate-fade-in">
+          <RefreshCw style={{ width: 18, height: 18, color: 'var(--cyan)', flexShrink: 0, animation: 'spin 1s linear infinite' }} />
+          <div>
+            <p style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 2 }}>Restoring private portfolio…</p>
+            <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Reconstructing client-side witness state from Midnight network.</p>
           </div>
         </div>
       )}
-
-      {/* Restoration Error Banner */}
       {restorationError && (
-        <div className="bg-rose-950/60 border border-rose-500/40 rounded-2xl p-5 flex items-center gap-3.5 text-rose-200 shadow-xl">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
-          <div className="text-xs">
-            <strong className="text-rose-100">Portfolio restoration encountered an issue:</strong>
-            <span className="block text-rose-300/90 mt-0.5">{restorationError}</span>
-          </div>
+        <div className="alert alert-rose">
+          <AlertCircle style={{ width: 18, height: 18, color: 'var(--rose)', flexShrink: 0 }} />
+          <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>{restorationError}</p>
         </div>
       )}
 
-      {/* Header with Privacy Guarantee & Shield Toggle */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <span>Shielded Private Portfolio</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
-                  <Lock className="w-2.5 h-2.5" /> CONFIDENTIAL
-                </span>
-              </h2>
-            </div>
+      {/* Page header */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <div className="page-icon page-icon-cyan">
+            <Shield style={{ width: 26, height: 26, color: 'var(--cyan)' }} />
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            This information resides strictly within your client-side shielded witness storage. The Midnight blockchain and external observers never see raw share quantities or dollar amounts; only your generated Zero-Knowledge proofs verify specific claims.
-          </p>
+          <div>
+            <h1 className="page-title">Shielded Portfolio</h1>
+            <p className="page-subtitle">
+              Your holdings live exclusively in client-shielded witness storage.
+              The public ledger never records your share counts or invested capital.
+            </p>
+          </div>
         </div>
-
         <button
-          onClick={() => setShowSensitiveData(!showSensitiveData)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition self-start sm:self-auto shadow-sm"
+          onClick={() => setMasked(v => !v)}
+          className="btn btn-ghost"
+          style={{ gap: 'var(--sp-2)' }}
         >
-          {showSensitiveData ? <EyeOff className="w-4 h-4 text-slate-400" /> : <Eye className="w-4 h-4 text-emerald-400" />}
-          <span>{showSensitiveData ? 'Hide Private Values' : 'Show Values'}</span>
+          {masked
+            ? <><Eye style={{ width: 15, height: 15 }} /> Show Values</>
+            : <><EyeOff style={{ width: 15, height: 15 }} /> Hide Values</>
+          }
         </button>
       </div>
 
-      {/* Portfolio Aggregate Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Capital Deployed</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+      {/* 4 stat cards */}
+      <div className="grid-4">
+        <div className="stat-card card-cyan">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="stat-label">Capital Deployed</span>
+            <div className="stat-icon" style={{ background: 'var(--cyan-dim)', border: '1px solid var(--cyan-border)' }}>
+              <DollarSign style={{ width: 18, height: 18, color: 'var(--cyan)' }} />
+            </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-400">
-            {showSensitiveData
-              ? `$${propertiesWithHoldings
-                  .reduce((acc, p) => acc + (portfolio[p.id]?.investmentAmountUsd || 0n), 0n)
-                  .toLocaleString()}`
-              : '••••••••••••'}
-          </div>
-          <span className="text-[11px] text-slate-500 block">Total private capital</span>
+          <div className="stat-value tabular" style={{ color: 'var(--cyan)' }}>{fmt(totalCapital)}</div>
+          <span className="stat-label">Total private capital</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Total Shares Held</span>
-            <PieChart className="w-4 h-4 text-indigo-400" />
+        <div className="stat-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="stat-label">Total Shares</span>
+            <div className="stat-icon" style={{ background: 'var(--violet-dim)', border: '1px solid var(--violet-border)' }}>
+              <PieChart style={{ width: 18, height: 18, color: 'var(--violet-light)' }} />
+            </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-indigo-300">
-            {showSensitiveData
-              ? propertiesWithHoldings
-                  .reduce((acc, p) => acc + (portfolio[p.id]?.ownershipShares || 0n), 0n)
-                  .toLocaleString()
-              : '••••••••••••'}
+          <div className="stat-value tabular" style={{ color: 'var(--violet-light)' }}>
+            {masked ? '••••••••' : Number(totalShares).toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-500 block">Fractional units</span>
+          <span className="stat-label">Fractional units held</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Est. Rental Yield</span>
-            <TrendingUp className="w-4 h-4 text-purple-400" />
+        <div className="stat-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="stat-label">Est. Annual Yield</span>
+            <div className="stat-icon" style={{ background: 'var(--green-dim)', border: '1px solid var(--green-border)' }}>
+              <TrendingUp style={{ width: 18, height: 18, color: 'var(--green)' }} />
+            </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-purple-300">
-            {showSensitiveData
-              ? `$${propertiesWithHoldings
-                  .reduce((acc, p) => acc + (portfolio[p.id]?.annualRentalIncomeUsd || 0n), 0n)
-                  .toLocaleString()} / yr`
-              : '••••••••••••'}
-          </div>
-          <span className="text-[11px] text-slate-500 block">Projected distribution</span>
+          <div className="stat-value tabular" style={{ color: 'var(--green)' }}>{fmt(totalRental)}/yr</div>
+          <span className="stat-label">Projected distribution</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Active Shielded Assets</span>
-            <Building2 className="w-4 h-4 text-amber-400" />
+        <div className="stat-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="stat-label">Active Holdings</span>
+            <div className="stat-icon" style={{ background: 'var(--amber-dim)', border: '1px solid var(--amber-border)' }}>
+              <Building2 style={{ width: 18, height: 18, color: 'var(--amber)' }} />
+            </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-white">
-            {propertiesWithHoldings.length}
-          </div>
-          <span className="text-[11px] text-slate-500 block">Listed properties</span>
+          <div className="stat-value tabular">{holdings.length}</div>
+          <span className="stat-label">Properties with shares</span>
         </div>
       </div>
 
-      {/* Property Holdings List */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-indigo-400" />
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Investor Holdings by Property ({propertiesWithHoldings.length})
+      {/* Holdings */}
+      <div className="card" style={{ padding: 0 }}>
+        <div style={{
+          padding: 'var(--sp-5) var(--sp-6)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+            <Building2 style={{ width: 16, height: 16, color: 'var(--cyan)' }} />
+            <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-1)' }}>
+              Holdings by Property
             </span>
+            <span className="badge badge-cyan">{holdings.length} assets</span>
           </div>
-          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            Client Witness State
-          </span>
+          <span className="badge badge-muted" style={{ fontSize: '0.625rem' }}>Client Witness State</span>
         </div>
 
-        {propertiesWithHoldings.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 space-y-3">
-            <Building2 className="w-12 h-12 mx-auto text-slate-600" />
-            <h3 className="text-base font-semibold text-slate-200">No Private Holdings Found</h3>
-            <p className="text-xs max-w-sm mx-auto text-slate-400">
-              Acquire fractional shares from the RWA Marketplace to establish private witness holdings and generate zero-knowledge ownership proofs.
-            </p>
+        {holdings.length === 0 ? (
+          <div className="empty-state">
+            <Building2 style={{ width: 48, height: 48, color: 'var(--text-5)' }} />
+            <div>
+              <p style={{ fontWeight: 600, color: 'var(--text-1)', fontSize: '1.0625rem', marginBottom: 'var(--sp-2)' }}>No Holdings Yet</p>
+              <p style={{ color: 'var(--text-4)', fontSize: '0.9375rem', maxWidth: '32rem', lineHeight: 1.6 }}>
+                Acquire fractional shares in the Marketplace to build your private portfolio.
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {propertiesWithHoldings.map((prop) => {
-              const holding = portfolio[prop.id];
-              const isEditing = editingPropId === prop.id;
-              const ownershipPercentage =
-                prop.totalShares > 0n
-                  ? (Number((holding.ownershipShares * 10000n) / prop.totalShares) / 100).toFixed(2)
-                  : '0.00';
+          <div>
+            {holdings.map(prop => {
+              const h = portfolio[prop.id];
+              const isEditing = editId === prop.id;
+              const pct = prop.totalShares > 0n
+                ? (Number((h.ownershipShares * 10000n) / prop.totalShares) / 100).toFixed(2)
+                : '0.00';
 
               return (
-                <div
-                  key={prop.id}
-                  className="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:bg-slate-800/20 transition"
-                >
-                  {/* Property Identity */}
-                  <div className="flex items-center gap-4 min-w-[260px]">
-                    <img
-                      src={prop.imageUrl}
-                      alt={prop.name}
-                      className="w-16 h-16 rounded-xl object-cover border border-slate-700 shrink-0 shadow-md"
-                    />
-                    <div>
-                      <h4 className="font-bold text-sm text-white">{prop.name}</h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs font-mono text-indigo-400 font-bold">{prop.id}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                          {prop.assetType}
-                        </span>
-                      </div>
-                      <span className="block text-[11px] text-slate-400 mt-1">
-                        Supply: {prop.totalShares.toLocaleString()} shares | Available: {prop.availableShares.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Private Metrics or Edit Mode */}
-                  {isEditing ? (
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full bg-slate-950/80 p-3.5 rounded-xl border border-indigo-500/30">
-                      <div>
-                        <label className="text-[10px] text-slate-400 uppercase font-semibold">Shares Owned</label>
-                        <input
-                          type="number"
-                          value={editShares}
-                          onChange={(e) => setEditShares(e.target.value)}
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-slate-400 uppercase font-semibold">Capital Invested ($)</label>
-                        <input
-                          type="number"
-                          value={editInvestment}
-                          onChange={(e) => setEditInvestment(e.target.value)}
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-slate-400 uppercase font-semibold">Annual Rental ($)</label>
-                        <input
-                          type="number"
-                          value={editRental}
-                          onChange={(e) => setEditRental(e.target.value)}
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-3 flex-1 w-full lg:w-auto font-mono">
-                      <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase font-sans">
-                          <span>Private Shares</span>
-                          <Lock className="w-2.5 h-2.5 text-emerald-400" />
-                        </div>
-                        <div className="text-sm font-bold text-white mt-1">
-                          {showSensitiveData ? (
-                            <>
-                              {holding.ownershipShares.toLocaleString()}{' '}
-                              <span className="text-xs text-indigo-400 font-normal">
-                                ({ownershipPercentage}%)
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-slate-500">••••••••••</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase font-sans">
-                          <span>Invested Capital</span>
-                          <Lock className="w-2.5 h-2.5 text-emerald-400" />
-                        </div>
-                        <div className="text-sm font-bold text-white mt-1">
-                          {showSensitiveData ? (
-                            `$${holding.investmentAmountUsd.toLocaleString()}`
-                          ) : (
-                            <span className="text-slate-500">••••••••••</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase font-sans">
-                          <span>Rental Yield</span>
-                          <Lock className="w-2.5 h-2.5 text-emerald-400" />
-                        </div>
-                        <div className="text-sm font-bold text-emerald-400 mt-1">
-                          {showSensitiveData ? (
-                            `$${holding.annualRentalIncomeUsd.toLocaleString()}/yr`
-                          ) : (
-                            <span className="text-slate-500">••••••••••</span>
-                          )}
+                <div key={prop.id} style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
+                  gap: 'var(--sp-6)',
+                  padding: 'var(--sp-5) var(--sp-6)',
+                  borderBottom: '1px solid var(--border)',
+                  alignItems: 'center',
+                }}>
+                  {/* Property info + metrics */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr auto', gap: 'var(--sp-6)', alignItems: 'center', minWidth: 0 }}>
+                    {/* Identity */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', minWidth: 0 }}>
+                      <img
+                        src={prop.imageUrl}
+                        alt={prop.name}
+                        style={{ width: 52, height: 52, borderRadius: 'var(--r-md)', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }}
+                        onError={e => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=200&q=60'; }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prop.name}</div>
+                        <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-1)', flexWrap: 'wrap' }}>
+                          <span className="badge badge-violet" style={{ fontSize: '0.5625rem' }}>{prop.id}</span>
+                          <span className="badge badge-muted" style={{ fontSize: '0.5625rem' }}>{prop.assetType}</span>
                         </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 self-end lg:self-center">
+                    {/* Metrics / Edit form */}
                     {isEditing ? (
-                      <button
-                        onClick={() => saveEdit(prop.id)}
-                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Save</span>
-                      </button>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--sp-3)' }}>
+                        {[
+                          { label: 'Shares', val: editShares, set: setEditShares },
+                          { label: 'Capital ($)', val: editInv, set: setEditInv },
+                          { label: 'Rental ($/yr)', val: editRent, set: setEditRent },
+                        ].map(f => (
+                          <div key={f.label} className="form-group">
+                            <label className="form-label">{f.label}</label>
+                            <input
+                              type="number"
+                              value={f.val}
+                              onChange={e => f.set(e.target.value)}
+                              style={{ fontSize: '0.875rem', padding: 'var(--sp-2) var(--sp-3)' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => startEdit(holding)}
-                        className="p-2 text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition shadow-sm"
-                        title="Adjust testnet private holding"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--sp-3)' }}>
+                        {[
+                          { label: 'Private Shares', value: masked ? '••••••••' : `${Number(h.ownershipShares).toLocaleString()} (${pct}%)`, color: 'var(--cyan)' },
+                          { label: 'Capital Invested', value: fmt(h.investmentAmountUsd), color: 'var(--text-1)' },
+                          { label: 'Rental Yield', value: `${fmt(h.annualRentalIncomeUsd)}/yr`, color: 'var(--green)' },
+                        ].map(m => (
+                          <div key={m.label} className="private-field">
+                            <div className="private-field-label">
+                              <span>{m.label}</span>
+                              <Lock style={{ width: 10, height: 10, color: 'var(--cyan)' }} />
+                            </div>
+                            <div className="private-field-value" style={{ color: m.color, fontSize: '0.9375rem' }}>{m.value}</div>
+                          </div>
+                        ))}
+                      </div>
                     )}
 
-                    <button
-                      onClick={() => onSelectPropertyForProof(prop, 'ownership')}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-md shadow-indigo-600/30"
-                    >
-                      Generate ZK Proof
-                    </button>
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', alignItems: 'flex-end' }}>
+                      {isEditing ? (
+                        <button onClick={() => saveEdit(prop.id)} className="btn btn-primary btn-sm">
+                          <Check style={{ width: 13, height: 13 }} /> Save
+                        </button>
+                      ) : (
+                        <button onClick={() => startEdit(h)} className="btn btn-ghost btn-sm" title="Adjust test holding">
+                          <Edit3 style={{ width: 13, height: 13 }} />
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  {/* ZK Proof button */}
+                  <button
+                    onClick={() => onSelectPropertyForProof(prop, 'ownership')}
+                    className="btn btn-violet"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <Shield style={{ width: 14, height: 14 }} />
+                    Generate ZK Proof
+                  </button>
                 </div>
               );
             })}
@@ -352,69 +278,63 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         )}
       </div>
 
-      {/* Real Transaction History Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-indigo-400" />
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              On-Chain Activity Ledger (Midnight Preprod Records)
-            </span>
+      {/* Transaction history */}
+      <div className="card" style={{ padding: 0 }}>
+        <div style={{
+          padding: 'var(--sp-5) var(--sp-6)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+            <Clock style={{ width: 16, height: 16, color: 'var(--text-4)' }} />
+            <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-1)' }}>On-Chain Activity</span>
           </div>
-          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            {transactionHistory.length} On-Chain Records
-          </span>
+          <span className="badge badge-muted" style={{ fontSize: '0.625rem' }}>{transactionHistory.length} records</span>
         </div>
-
         {transactionHistory.length === 0 ? (
-          <div className="p-10 text-center text-slate-500 text-xs">
-            No transaction activity recorded yet for this wallet on Midnight Preprod.
+          <div className="empty-state" style={{ padding: 'var(--sp-10) var(--sp-8)' }}>
+            <Clock style={{ width: 36, height: 36, color: 'var(--text-5)' }} />
+            <p style={{ color: 'var(--text-4)', fontSize: '0.9375rem' }}>No on-chain activity yet for this wallet.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {transactionHistory.map((tx, idx) => {
-              const dateStr = tx.timestamp ? new Date(tx.timestamp).toLocaleString() : 'Recent';
-
-              return (
-                <div
-                  key={`${tx.txId}-${idx}`}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-800/20 transition"
-                >
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-sm text-white">
-                        {tx.propertyName || 'Property Share Purchase'}
-                      </span>
-                      <span className="text-xs font-mono text-indigo-400 font-semibold">{tx.propertyId}</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-300 border-indigo-500/30">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Shielded Witness Allocation
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                      <span>
-                        Shares: <strong className="text-slate-200">{BigInt(tx.shares || '0').toLocaleString()}</strong>
-                      </span>
-                      <span>•</span>
-                      <span>
-                        Proportional Valuation: <strong className="text-slate-200">${BigInt(tx.capitalUsd || '0').toLocaleString()}</strong>
-                      </span>
-                      <span>•</span>
-                      <span className="text-slate-500">{dateStr}</span>
-                    </div>
-
-                    <div className="mt-1.5 text-[11px] font-mono text-slate-500 flex flex-wrap items-center gap-2">
-                      <span className="text-emerald-400/90 font-sans">Shielded Witness Registered</span>
-                      <span>•</span>
-                      <span className="text-slate-400 font-sans">Midnight Preprod (Simulated Demo)</span>
-                    </div>
+          <div>
+            {transactionHistory.map((tx, i) => (
+              <div key={`${tx.txId}-${i}`} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: 'var(--sp-4) var(--sp-6)',
+                borderBottom: i < transactionHistory.length - 1 ? '1px solid var(--border)' : 'none',
+                gap: 'var(--sp-6)', flexWrap: 'wrap',
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-1)' }}>
+                      {tx.propertyName || 'Share Purchase'}
+                    </span>
+                    <span className="badge badge-violet" style={{ fontSize: '0.5625rem' }}>{tx.propertyId}</span>
+                    <span className="badge badge-green" style={{ fontSize: '0.5625rem' }}>
+                      <CheckCircle2 style={{ width: 10, height: 10 }} /> Confirmed
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 'var(--sp-5)', fontSize: '0.8125rem', color: 'var(--text-4)', flexWrap: 'wrap' }}>
+                    <span>Shares: <strong style={{ color: 'var(--text-2)' }}>{BigInt(tx.shares || '0').toLocaleString()}</strong></span>
+                    <span>Value: <strong style={{ color: 'var(--text-2)' }}>${BigInt(tx.capitalUsd || '0').toLocaleString()}</strong></span>
+                    <span>{tx.timestamp ? new Date(tx.timestamp).toLocaleString() : 'Recent'}</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 1024px) {
+          /* Holdings row: 2-col instead of 3 */
+        }
+        @media (max-width: 640px) {
+          /* Holdings: stack columns */
+        }
+      `}</style>
     </div>
   );
 };

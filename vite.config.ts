@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import wasm from 'vite-plugin-wasm';
 import fs from 'node:fs';
@@ -58,6 +59,7 @@ function propertyRegistryPlugin(): Plugin {
 export default defineConfig({
   plugins: [
     propertyRegistryPlugin(),
+    tailwindcss(),
     wasm(),
     react(),
     nodePolyfills({

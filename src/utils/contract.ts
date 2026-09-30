@@ -157,10 +157,30 @@ export function calculateAvailableShares(total: bigint, acquired: bigint): bigin
 /**
  * Helper to serialize PropertyMetadata into JSON-safe objects.
  */
+/**
+ * Ensures any input ID (string, Uint8Array, array, or object) is formatted as an exact 32-byte Uint8Array for Compact (Bytes<32>).
+ */
+export function ensure32BytesId(input: any): Uint8Array {
+  const result = new Uint8Array(32);
+  if (!input) return result;
+  if (typeof input === 'string') {
+    const encoded = new TextEncoder().encode(input);
+    result.set(encoded.subarray(0, 32));
+  } else if (input instanceof Uint8Array) {
+    result.set(input.subarray(0, 32));
+  } else if (Array.isArray(input)) {
+    result.set(new Uint8Array(input).subarray(0, 32));
+  } else if (typeof input === 'object') {
+    const vals = Object.values(input).map(Number);
+    result.set(new Uint8Array(vals).subarray(0, 32));
+  }
+  return result;
+}
+
 export function serializeProperties(props: PropertyMetadata[]): any[] {
   return props.map((p) => ({
     ...p,
-    bytesId: Array.from(p.bytesId),
+    bytesId: Array.from(ensure32BytesId(p.bytesId || p.id)),
     totalShares: p.totalShares.toString(),
     acquiredShares: p.acquiredShares.toString(),
     availableShares: p.availableShares.toString(),
@@ -176,9 +196,7 @@ export function deserializeProperties(rawArray: any[]): PropertyMetadata[] {
   return rawArray.map((item: any) => {
     const totalShares = BigInt(item.totalShares || 100000);
     const acquiredShares = BigInt(item.acquiredShares || 0);
-    const bytesId = item.bytesId
-      ? new Uint8Array(Object.values(item.bytesId))
-      : new Uint8Array(32).fill(1);
+    const bytesId = ensure32BytesId(item.bytesId || item.id);
     return {
       ...item,
       bytesId,
@@ -358,16 +376,18 @@ export async function initializeContractInstance(
   property: PropertyMetadata,
   privateState: PrivEstatePrivateState
 ) {
-  const witnesses = createWitnesses();
+  const witnesses = createWitnesses(privateState);
   const contract = new Contract<PrivEstatePrivateState>(witnesses);
   const constructorContext = createConstructorContext(
     privateState,
     '0'.repeat(64)
   );
 
+  const safeBytesId = ensure32BytesId(property.bytesId || property.id);
+
   const init = await contract.initialState(
     constructorContext,
-    property.bytesId,
+    safeBytesId,
     property.totalShares,
     property.complianceMinimumUsd
   );
@@ -419,7 +439,8 @@ export async function runOwnershipThresholdProof(
   const updatedLedger = ledger(result.context.currentQueryContext.state);
 
   // Derive proof cryptographic commitment
-  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, property.bytesId);
+  const safeBytesId = ensure32BytesId(property.bytesId || property.id);
+  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, safeBytesId);
   const proofHash = '0x' + Array.from(commitment).map(b => b.toString(16).padStart(2, '0')).join('');
 
   return {
@@ -470,7 +491,8 @@ export async function runComplianceProof(
   );
 
   const updatedLedger = ledger(result.context.currentQueryContext.state);
-  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, property.bytesId);
+  const safeBytesId = ensure32BytesId(property.bytesId || property.id);
+  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, safeBytesId);
   const proofHash = '0x' + Array.from(commitment).map(b => b.toString(16).padStart(2, '0')).join('');
 
   return {
@@ -521,7 +543,8 @@ export async function runRentalYieldProof(
   );
 
   const updatedLedger = ledger(result.context.currentQueryContext.state);
-  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, property.bytesId);
+  const safeBytesId = ensure32BytesId(property.bytesId || property.id);
+  const commitment = pureCircuits.computeInvestorCommitment(holding.secretKey, safeBytesId);
   const proofHash = '0x' + Array.from(commitment).map(b => b.toString(16).padStart(2, '0')).join('');
 
   return {
